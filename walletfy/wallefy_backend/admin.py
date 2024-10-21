@@ -15,3 +15,5 @@ admin.site.register(Location)
 admin.site.register(UserLocationWisePreferences)
 
 admin.site.register(UserExpense)
+admin.site.register(UserRole)
+admin.site.register(UserIncomeDetails)
