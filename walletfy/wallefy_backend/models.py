@@ -35,7 +35,6 @@ class UserProfile(models.Model):
         max_length=10,
         choices=GenderChoices.list_of_values()
     )
-    role = models.OneToOneField(UserRole, on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.user.username}'s Profile"
