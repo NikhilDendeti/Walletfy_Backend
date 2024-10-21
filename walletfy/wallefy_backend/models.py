@@ -47,7 +47,7 @@ class UserIncomeDetails(models.Model):
 
 class UserPreferenceDetails(models.Model):
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
-    month = models.DateField(auto_now=True)
+    month = models.DateField(auto_now_add=True)
     preference = models.CharField(max_length=150, choices=PreferenceChoices.list_of_values())
     location = models.CharField(max_length=150, choices=AreaEnum.list_of_values())
     city = models.CharField(max_length=150, choices=LocationChoices.list_of_values(),
@@ -75,7 +75,9 @@ class UserLocationWisePreferences(models.Model):
     category = models.CharField(max_length=50, choices=Category.list_of_values())
 
     class Meta:
-        unique_together = ('location', 'category',)
+        constraints = [
+            models.UniqueConstraint(fields=['location', 'category'], name='unique_location_category')
+        ]
 
     def __str__(self):
         return f"{self.location.name} - {self.get_category_display()} "
@@ -89,7 +91,7 @@ class UserExpense(models.Model):
     remaining_amount = models.DecimalField(max_digits=10, decimal_places=2)
     user_income_details = models.ForeignKey(UserIncomeDetails, on_delete=models.CASCADE)
     total_expenses_amount = models.DecimalField(max_digits=10, decimal_places=2)
-    date = models.DateTimeField(auto_now=True)
+    date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.user.username} - {self.category}: {self.expenses_amount}"
