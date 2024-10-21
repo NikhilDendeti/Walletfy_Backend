@@ -1,0 +1,456 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "Simple API",
+    "description": "A simple API to learn how to write OpenAPI Specification"
+  },
+  "host": "localhost:8000",
+  "basePath": "/api/",
+  "schemes": [
+    "https",
+    "http"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "securityDefinitions": {
+    "oauth": {
+      "tokenUrl": "http://auth.ibtspl.com/oauth2/",
+      "flow": "password",
+      "scopes": {
+        "read": "read users",
+        "write": "create users",
+        "update": "update users",
+        "delete": "delete users",
+        "superuser": "super user permission"
+      },
+      "type": "oauth2"
+    }
+  },
+  "definitions": {
+    "UserBasicDetails": {
+      "type": "object",
+      "properties": {
+        "salary": {
+          "type": "integer"
+        },
+        "location": {
+          "type": "string"
+        },
+        "area": {
+          "$ref": "#/definitions/AreaEnum"
+        },
+        "spendingPreferences": {
+          "$ref": "#/definitions/SpendingPreferencesEnum"
+        }
+      },
+      "required": [
+        "salary",
+        "location",
+        "area",
+        "spendingPreferences"
+      ]
+    },
+    "AreaEnum": {
+      "type": "string",
+      "enum": [
+        "Alwal",
+        "Amberpet",
+        "Ameerpet",
+        "Attapur",
+        "Bachupally",
+        "Banjara Hills",
+        "Begumpet",
+        "Charminar",
+        "Dilsukhnagar",
+        "ECIL",
+        "Gachibowli",
+        "Hafiz Baba Nagar",
+        "Hayath Nagar",
+        "Himayatnagar",
+        "Jeedimetla",
+        "JNTU",
+        "Karkhana",
+        "Kompally",
+        "Kondapur",
+        "Kukatpally",
+        "LB Nagar",
+        "Madhapur",
+        "Malakpet",
+        "Manikonda",
+        "Masab Tank",
+        "Medchal Road",
+        "Miyapur",
+        "Mokila",
+        "Moosapet",
+        "Nagole",
+        "Narayanguda",
+        "Nizampet",
+        "Patancheru",
+        "Peerzadiguda",
+        "Q City",
+        "Sainikpuri",
+        "Sangareddy",
+        "Saroor Nagar",
+        "Serilingampally",
+        "Shamshabad",
+        "Sivarampalli",
+        "Suraram",
+        "Tarnaka",
+        "Toli Chowki",
+        "Uppal",
+        "Vanasthalipuram"
+      ]
+    },
+    "SpendingPreferencesEnum": {
+      "type": "string",
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ]
+    }
+  },
+  "parameters": {
+    "CreateLoginParameter": {
+      "name": "login",
+      "in": "body",
+      "description": "User login",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      }
+    },
+    "CreateSignUpParameter": {
+      "name": "login",
+      "in": "body",
+      "description": "User Sign UP ",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "user_name": {
+            "type": "string"
+          },
+          "first_name": {
+            "type": "string"
+          },
+          "last_name": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "student",
+              "employee"
+            ]
+          },
+          "Gender": {
+            "type": "string",
+            "enum": [
+              "male",
+              "female"
+            ]
+          }
+        },
+        "required": [
+          "email",
+          "password",
+          "first_name",
+          "last_name",
+          "role",
+          "Gender"
+        ]
+      }
+    },
+    "CreateUpdatePassword": {
+      "name": "Update Password",
+      "in": "body",
+      "description": "Update User Password",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "confirm_password": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "password",
+          "confirm_password"
+        ]
+      }
+    },
+    "CreateUserTransactionDetails": {
+      "name": "user transaction details",
+      "in": "body",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "current_date_time": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "current_date_time"
+        ]
+      }
+    }
+  },
+  "responses": {
+    "CreateLogin": {
+      "description": "User login Response",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "token"
+        ]
+      }
+    },
+    "createUserSignUpResponse": {
+      "description": "Create User signUp response",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "token"
+        ]
+      }
+    },
+    "CreateUpdatePasswordResponse": {
+      "description": "Password Updated Successfully"
+    },
+    "createUserTransactionResponse": {
+      "description": "user transaction details",
+      "schema": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "remaining_balance": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "total_salary": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "total_expenses": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "name",
+          "remaining_balance",
+          "total_salary",
+          "total_expenses"
+        ]
+      }
+    },
+    "createUserExpensesDetailsResponses": {
+      "description": "GET user Expenses Response",
+      "schema": {
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": [
+              "Food",
+              "Entertainment",
+              "Travel",
+              "Health",
+              "Miscellaneous",
+              "Rent",
+              "Savings",
+              "Shopping"
+            ]
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "expenses": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "expenses_used_time": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "error": {
+      "description": "Bad request",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "error_code": {
+            "type": "string"
+          },
+          "error_message": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/get/user/basic/details/v1": {
+      "post": {
+        "operationId": "post_user_basic_details",
+        "summary": "Post User Basic Details",
+        "description": "This endpoint accepts the user's salary, location, area, and spending preferences.",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "userDetails",
+            "description": "User details object",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UserBasicDetails"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User details successfully processed"
+          },
+          "400": {
+            "description": "Invalid request"
+          }
+        }
+      }
+    },
+    "/user_accounts/login/v1": {
+      "get": {
+        "summary": "User login and verification",
+        "operationId": "user_login",
+        "parameters": [
+          {
+            "$ref": "#/parameters/CreateLoginParameter"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/CreateLogin"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/user_account/signup/v1": {
+      "post": {
+        "summary": "User accounts signUp",
+        "operationId": "user_signup",
+        "parameters": [
+          {
+            "$ref": "#/parameters/CreateSignUpParameter"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/createUserSignUpResponse"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/user_accounts/update_password/v1": {
+      "post": {
+        "summary": "Update User Password",
+        "operationId": "update_user_password",
+        "parameters": [
+          {
+            "$ref": "#/parameters/CreateUpdatePassword"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/CreateUpdatePasswordResponse"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/get/user_transaction_details/v1": {
+      "post": {
+        "summary": "Get user transaction details",
+        "operationId": "transaction_details",
+        "parameters": [
+          {
+            "$ref": "#/parameters/CreateUserTransactionDetails"
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/responses/error"
+          },
+          "200": {
+            "$ref": "#/responses/createUserTransactionResponse"
+          }
+        }
+      }
+    },
+    "/get/user_expenses_details/v1": {
+      "get": {
+        "summary": "Get User Expenses details",
+        "operationId": "user_expenses",
+        "parameters": [
+          {
+            "$ref": "#/parameters/CreateUserTransactionDetails"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/createUserExpensesDetailsResponses"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    }
+  }
+}
