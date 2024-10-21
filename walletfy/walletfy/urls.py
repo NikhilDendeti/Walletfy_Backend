@@ -16,7 +16,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from wallefy_backend.views import *
 
 urlpatterns = [
+    path('account-balance/', update_user_expense, name='account_balance'),
     path('admin/', admin.site.urls),
 ]
