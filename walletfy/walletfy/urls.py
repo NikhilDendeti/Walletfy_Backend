@@ -19,6 +19,7 @@ from django.urls import path
 from wallefy_backend.views import *
 
 urlpatterns = [
-    path('account-balance/', update_user_expense, name='account_balance'),
     path('admin/', admin.site.urls),
+    path('account-balance/', update_user_expense, name='account_balance'),
+    path('get-user-details/', get_user_details, name='get_user_details'),
 ]

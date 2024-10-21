@@ -1,13 +1,13 @@
-from django.core.exceptions import ObjectDoesNotExist
-from django.http import JsonResponse
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.decorators import api_view, permission_classes, \
-    authentication_classes
-from .models import User, UserExpense
-from .Enums import TransactionType
-from django.utils import timezone
-from django.db.models import Sum
 from decimal import Decimal
+
+from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Sum
+from django.http import JsonResponse
+from django.utils import timezone
+from rest_framework.decorators import api_view
+
+from .Enums import TransactionType
+from .models import User, UserExpense, UserPreferenceDetails, UserProfile
 
 
 @api_view(['POST'])
@@ -77,3 +77,99 @@ def update_user_expense(request):
         'total_income': str(total_income),
         'total_expense': str(total_expense),
     }, status=200)
+
+@api_view(["POST"])
+def get_user_details(request):
+    user_id = request.data.get('user')
+    salary = request.data.get('salary')
+    location = request.data.get('location')
+    city = request.data.get('city')
+    preference = request.data.get('preference')
+
+    # Validation logic can be added here if required
+
+    try:
+        user = User.objects.get(id=user_id)
+    except ObjectDoesNotExist:
+        return JsonResponse({'message': 'User not found.'}, status=404)
+    except ValueError:
+        return JsonResponse({'message': 'Invalid user ID format.'}, status=400)
+
+    # Try to get the UserProfile or create it if not found
+    user_profile, created = UserProfile.objects.get_or_create(
+        user=user,
+        defaults={
+            'gender': 'Male',  # Set a default value or extract from request
+            'role': 'Employee'  # Set a default value or extract from request
+        }
+    )
+
+    # Now you can create UserPreferenceDetails using the user_profile
+    UserPreferenceDetails.objects.create(
+        user=user_profile,  # Correctly passing UserProfile instance
+        salary=salary,
+        location=location,
+        city=city,
+        preference=preference
+    )
+
+    return JsonResponse({
+        'username': user.username,
+        'salary': salary,
+        'location': location,
+        'city': city,
+        'preference': preference
+    })
+
+
+#
+# @api_view(["POST"])
+# def get_user_details(request):
+#     user_id = request.data.get('user')
+#     salary = request.data.get('salary')
+#     location = request.data.get('location')
+#     city = request.data.get('city')
+#     preference = request.data.get('preference')
+#
+#     # if salary is None or location is None or city is None or preference is None:
+#     #     return JsonResponse({
+#     #         'message': 'Salary, location, city and preference are required.'
+#     #     }, status=400)
+#     #
+#     # if salary <= 0:
+#     #     return JsonResponse({
+#     #         'message': 'Salary must be positive.'
+#     #     }, status=400)
+#     #
+#     # if location not in UserPreferenceDetails.LocationChoices.list_of_values():
+#     #     return JsonResponse({
+#     #         'message': 'Invalid location.'
+#     #     }, status=400)
+#     #
+#     # if city not in UserPreferenceDetails.LocationChoices.list_of_values():
+#     #     return JsonResponse({
+#     #         'message': 'Invalid city.'
+#     #     }, status=400)
+#     #
+#     # if preference not in UserPreferenceDetails.PreferenceChoices.list_of_values():
+#     #     return JsonResponse({
+#     #         'message': 'Invalid preference.'
+#     #     }, status=400)
+#
+#     try:
+#         user = User.objects.get(id=user_id)
+#     except ObjectDoesNotExist:
+#         return JsonResponse({'message': 'User not found.'}, status=404)
+#     except ValueError:
+#         return JsonResponse({'message': 'Invalid user ID format.'}, status=400)
+#     UserPreferenceDetails.objects.create(user=user, salary=salary,
+#                                          location=location,
+#                                          city=city,
+#                                          preference=preference)
+#     return JsonResponse({
+#         'username': user.username,
+#         'salary': salary,
+#         'location':location,
+#         'city': city,
+#         'preference': preference
+#     })
