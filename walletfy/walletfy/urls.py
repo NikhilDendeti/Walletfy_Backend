@@ -37,4 +37,7 @@ urlpatterns = [
          name='get_transaction_details'),
     path('get-user-expense-suggestions/', get_user_expense_suggestions,
          name='get_user_expense_suggestions'),
+    path('get-user-expenses-comparison-at-eom',
+         get_user_expenses_comparison_at_eom,
+         name='get_user_expenses_comparison_at_eom'),
 ]

@@ -50,19 +50,22 @@ def get_user_expense_suggestions(request):
 
         base_amount = Decimal(salary)
 
-        rent_amount = base_amount * (location_details.Rent_percentage / 100)
-        food_amount = base_amount * (location_details.Food_percentage / 100)
-        shopping_amount = base_amount * (
-                location_details.Shopping_percentage / 100)
-        travelling_amount = base_amount * (
-                location_details.Travelling_percentage / 100)
-        health_amount = base_amount * (location_details.Health_percentage / 100)
-        entertainment_amount = base_amount * (
-                location_details.Entertainment_percentage / 100)
-        savings_amount = base_amount * (
-                location_details.Savings_percentage / 100)
-        miscellaneous_amount = base_amount * (
-                location_details.Miscellaneous_percentage / 100)
+        rent_amount = round(
+            base_amount * (location_details.Rent_percentage / 100), 2)
+        food_amount = round(
+            base_amount * (location_details.Food_percentage / 100), 2)
+        shopping_amount = round(
+            base_amount * (location_details.Shopping_percentage / 100), 2)
+        travelling_amount = round(
+            base_amount * (location_details.Travelling_percentage / 100), 2)
+        health_amount = round(
+            base_amount * (location_details.Health_percentage / 100), 2)
+        entertainment_amount = round(
+            base_amount * (location_details.Entertainment_percentage / 100), 2)
+        savings_amount = round(
+            base_amount * (location_details.Savings_percentage / 100), 2)
+        miscellaneous_amount = round(
+            base_amount * (location_details.Miscellaneous_percentage / 100), 2)
 
         data = {
             'salary': base_amount,
@@ -87,6 +90,103 @@ def get_user_expense_suggestions(request):
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
+@api_view(['POST'])
+def get_user_expenses_comparison_at_eom(request):
+    user_id = request.data.get('user')
+    month = request.data.get('month')
+
+    if not month:
+        return JsonResponse({'message': 'Month is required.'}, status=400)
+
+    try:
+        month = int(month)
+        if month < 1 or month > 12:
+            return JsonResponse({'message': 'Invalid month.'}, status=400)
+    except ValueError:
+        return JsonResponse({'message': 'Month must be a number.'}, status=400)
+
+    # Try to get the user
+    try:
+        user = User.objects.get(id=user_id)
+    except ObjectDoesNotExist:
+        return JsonResponse({'message': 'User not found.'}, status=404)
+
+    try:
+        user_profile = UserProfile.objects.get(user=user)
+        user_preference = UserPreferenceDetails.objects.get(user=user_profile)
+    except ObjectDoesNotExist:
+        return JsonResponse({'message': 'User preferences not found.'},
+                            status=404)
+
+    try:
+        location_details = LocationWiseCategoryDetails.objects.get(
+            location__area=user_preference.location,
+            preference=user_preference.preference,
+            gender=user_profile.gender
+        )
+    except ObjectDoesNotExist:
+        return JsonResponse({'message': 'Location details not found.'},
+                            status=404)
+
+    base_amount = user_preference.salary
+    recommended_amounts = {
+        'Rent': round(base_amount * (location_details.Rent_percentage / 100),
+                      2),
+        'Food': round(base_amount * (location_details.Food_percentage / 100),
+                      2),
+        'Shopping': round(
+            base_amount * (location_details.Shopping_percentage / 100), 2),
+        'Travelling': round(
+            base_amount * (location_details.Travelling_percentage / 100), 2),
+        'Health': round(
+            base_amount * (location_details.Health_percentage / 100), 2),
+        'Entertainment': round(
+            base_amount * (location_details.Entertainment_percentage / 100), 2),
+        'Savings': round(
+            base_amount * (location_details.Savings_percentage / 100), 2),
+        'Miscellaneous': round(
+            base_amount * (location_details.Miscellaneous_percentage / 100), 2),
+    }
+
+    print(f"Recommended amounts: {recommended_amounts}")
+
+    user_expenses_history = UserExpense.objects.filter(
+        user=user,
+        date__month=month
+    ).values('category').annotate(total=Sum('expenses_amount'))
+
+    total_expense = UserExpense.objects.filter(
+        user=user, date__month=month
+    ).aggregate(total=Sum('expenses_amount'))['total'] or 0
+
+    print(f"User's actual expenses: {list(user_expenses_history)}")
+
+    expenses_with_recommended = []
+    for expense in user_expenses_history:
+        category = expense['category']
+        actual_amount = round(expense['total'],
+                              2)
+        recommended_amount = recommended_amounts.get(category,
+                                                     0)
+
+        print(
+            f"Category: {category}, Actual: {actual_amount}, Recommended: {recommended_amount}")
+
+        expenses_with_recommended.append({
+            'category': category,
+            'actual_amount': actual_amount,
+            'recommended_amount': recommended_amount
+        })
+
+    return JsonResponse({
+        'user_expenses_history': expenses_with_recommended,
+        'total_expense': round(total_expense, 2),
+
+        'recommended_amounts': recommended_amounts
+
+    }, status=200)
+
+
 @api_view(["POST"])
 def get_user_details(request):
     user_id = request.data.get('user')
@@ -105,7 +205,7 @@ def get_user_details(request):
     user_profile, created = UserProfile.objects.get_or_create(
         user=user,
         defaults={
-            'gender': 'Male',
+            'gender': 'MALE',
             'role': 'Employee'
         }
     )
@@ -178,7 +278,7 @@ def update_user_expense(request):
     user_profile, created = UserProfile.objects.get_or_create(
         user=user,
         defaults={
-            'gender': 'Male',
+            'gender': 'MALE',
             'role': 'Employee'
         }
     )
