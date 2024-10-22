@@ -1,13 +1,20 @@
+import uuid
+
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from enum import Enum
 
-from .Enums import *
+from .enums import *
 
 from django.contrib.auth.models import AbstractUser, Group, Permission
 
 
 class User(AbstractUser):
+    user_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    username = models.CharField(max_length=50, null=True, unique=True)
+    email = models.EmailField(unique=True)
+    full_name = models.CharField(max_length=50)
+
     groups = models.ManyToManyField(
         Group,
         related_name='wallefy_backend_user_groups',  # Custom related name
@@ -41,7 +48,7 @@ class UserProfile(models.Model):
 
 
 class UserIncomeDetails(models.Model):
-    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     salary = models.DecimalField(max_digits=10, decimal_places=2)
 
 
@@ -75,9 +82,7 @@ class UserLocationWisePreferences(models.Model):
     category = models.CharField(max_length=50, choices=Category.list_of_values())
 
     class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=['location', 'category'], name='unique_location_category')
-        ]
+        unique_together = ('location', 'category')
 
     def __str__(self):
         return f"{self.location.name} - {self.get_category_display()} "

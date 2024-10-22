@@ -152,10 +152,7 @@
           "user_name": {
             "type": "string"
           },
-          "first_name": {
-            "type": "string"
-          },
-          "last_name": {
+          "full_name": {
             "type": "string"
           },
           "role": {
@@ -193,7 +190,7 @@
           "email": {
             "type": "string"
           },
-          "password": {
+          "old_password": {
             "type": "string"
           },
           "confirm_password": {
@@ -220,6 +217,58 @@
         },
         "required": [
           "current_date_time"
+        ]
+      }
+    },
+    "CreateUpdateUserProfileDetails": {
+      "name": "user profile details",
+      "in": "body",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "full_name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "full_name",
+          "email"
+        ]
+      }
+    },
+    "createRefreshAccessToken": {
+      "name": "refresh access token",
+      "in": "body",
+      "schema": {
+        "properties": {
+          "refresh_token": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "refresh_token"
+        ]
+      }
+    },
+    "createUserLogout": {
+      "name": "user logout",
+      "in": "body",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "Access_token": {
+            "type": "string"
+          },
+          "refresh_token": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "Access_token",
+          "refresh_token"
         ]
       }
     }
@@ -311,6 +360,56 @@
           "expenses_used_time": {
             "type": "string",
             "format": "date-time"
+          }
+        }
+      }
+    },
+    "createUserProfileResponse": {
+      "description": "Get User Profile Response",
+      "schema": {
+        "properties": {
+          "user_id": {
+            "type": "string"
+          },
+          "user_name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "first_name": {
+            "type": "string"
+          },
+          "last_name": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "Gender": {
+            "type": "string"
+          },
+          "salary": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id",
+          "user_name",
+          "email",
+          "first_name",
+          "last_name",
+          "role",
+          "Gender"
+        ]
+      }
+    },
+    "createRefreshAccessTokenResponse": {
+      "description": "Refresh Access Token Response",
+      "schema": {
+        "properties": {
+          "access_token": {
+            "type": "string"
           }
         }
       }
@@ -451,6 +550,78 @@
           }
         }
       }
+    },
+    "/get/user_profile/v1": {
+      "get": {
+        "summary": "Get User Profile details",
+        "operationId": "user_profile",
+        "responses": {
+          "200": {
+            "$ref": "#/responses/createUserProfileResponse"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/update/user_profile/v1": {
+      "post": {
+        "summary": "Update user profile details",
+        "operationId": "update_user_profile",
+        "parameters": [
+          {
+            "$ref": "#/parameters/CreateUpdateUserProfileDetails"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Profile updated successfully"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/user/refresh_access_token/v1": {
+      "post": {
+        "summary": "Create access token using refresh token",
+        "operationId": "refresh_access_token",
+        "parameters": [
+          {
+            "$ref": "#/parameters/createRefreshAccessToken"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/createRefreshAccessTokenResponse"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/user_account/logout/v1": {
+      "post": {
+        "summary": "user logout",
+        "operationId": "user_logout",
+        "parameters": [
+          {
+            "$ref": "#/parameters/createUserLogout"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User logged out successfully"
+          },
+          "400": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
     }
   }
 }
+

@@ -17,6 +17,17 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+from walletfy.wallefy_backend.views import get_signup_interactor_view, get_login_interactor_view, \
+    get_update_password_view, get_user_profile_api_view, update_user_profile_view, refresh_access_token_view, \
+    user_logout_view
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('user_account/login/v1', get_login_interactor_view),
+    path('user_account/signup/v1', get_signup_interactor_view),
+    path('user_account/update_password/v1', get_update_password_view),
+    path('get/user_profile/v1', get_user_profile_api_view),
+    path('update/user_profile/v1', update_user_profile_view),
+    path("get/refresh_access_token/v1", refresh_access_token_view),
+    path("user_account/logout/v1", user_logout_view)
 ]
