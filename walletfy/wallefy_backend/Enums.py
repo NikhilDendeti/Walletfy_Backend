@@ -38,6 +38,8 @@ class Category(BaseEnum):
     RENT = "Rent"
     SAVINGS = "Savings"
     SHOPPING = "Shopping"
+    INCOME = "Income"
+    EXPENSE = "Expense"
 
 
 class TransactionType(BaseEnum):

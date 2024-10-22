@@ -49,7 +49,7 @@ class Location(models.Model):
                                  choices=AreaEnum.list_of_values(), unique=True)
 
     def __str__(self):
-        return self.city_name()
+        return self.city_name
 
 
 class UserLocationWisePreferences(models.Model):
@@ -70,7 +70,7 @@ class UserLocationWisePreferences(models.Model):
 
 class UserExpense(models.Model):
     user = models.ForeignKey(User,
-                             on_delete=models.CASCADE)  # Changed to link directly to User
+                             on_delete=models.CASCADE)
     category = models.CharField(max_length=50,
                                 choices=Category.list_of_values())
     description = models.TextField(blank=True, null=True)
