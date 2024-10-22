@@ -9,15 +9,15 @@ class BaseEnum(Enum):
 
 
 class PreferenceChoices(BaseEnum):
-    HIGH = 'High'
-    MEDIUM = 'Medium'
-    LOW = 'Low'
+    RICH = 'RICH'
+    MIDDLE_CLASS = 'MIDDLE CLASS'
+    POOR = 'POOR'
 
 
 class GenderChoices(BaseEnum):
-    MALE = 'Male'
-    FEMALE = 'Female'
-    OTHER = 'Other'
+    MALE = 'MALE'
+    FEMALE = 'FEMALE'
+    OTHER = 'OTHER'
 
 
 class RoleChoices(BaseEnum):
@@ -48,49 +48,49 @@ class TransactionType(BaseEnum):
 
 
 class AreaEnum(BaseEnum):
-    ALWAL = "Alwal"
-    AMBERPET = "Amberpet"
-    AMEERPET = "Ameerpet"
-    ATTAPUR = "Attapur"
-    BACHUPALLY = "Bachupally"
-    BANJARA_HILLS = "Banjara Hills"
-    BEGUMPET = "Begumpet"
-    CHARMINAR = "Charminar"
-    DILSUKHNAGAR = "Dilsukhnagar"
+    ALWAL = "ALWAL"
+    AMBERPET = "AMBERPET"
+    AMEERPET = "AMEERPET"
+    ATTAPUR = "ATTAPUR"
+    BACHUPALLY = "BACHUPALLY"
+    BANJARA_HILLS = "BANJARA HILLS"
+    BEGUMPET = "BEGUMPET"
+    CHARMINAR = "CHARMINAR"
+    DILSUKHNAGAR = "DILSUKHNAGAR"
     ECIL = "ECIL"
-    GACHIBOWLI = "Gachibowli"
-    HAFIZ_BABA_NAGAR = "Hafiz Baba Nagar"
-    HAYATH_NAGAR = "Hayath Nagar"
-    HIMAYATNAGAR = "Himayatnagar"
-    JEEDIMETLA = "Jeedimetla"
+    GACHIBOWLI = "GACHIBOWLI"
+    HAFIZ_BABA_NAGAR = "HAFIZ BABA NAGAR"
+    HAYATH_NAGAR = "HAYATH NAGAR"
+    HIMAYATNAGAR = "HIMAYATNAGAR"
+    JEEDIMETLA = "JEEDIMETLA"
     JNTU = "JNTU"
-    KARKHANA = "Karkhana"
-    KOMPALLY = "Kompally"
-    KONDAPUR = "Kondapur"
-    KUKATPALLY = "Kukatpally"
-    LB_NAGAR = "LB Nagar"
-    MADHAPUR = "Madhapur"
-    MALAKPET = "Malakpet"
-    MANIKONDA = "Manikonda"
-    MASAB_TANK = "Masab Tank"
-    MEDCHAL_ROAD = "Medchal Road"
-    MIYAPUR = "Miyapur"
-    MOKILA = "Mokila"
-    MOOSAPET = "Moosapet"
-    NAGOLE = "Nagole"
-    NARAYANGUDA = "Narayanguda"
-    NIZAMPET = "Nizampet"
-    PATANCHERU = "Patancheru"
-    PEERZADIGUDA = "Peerzadiguda"
-    Q_CITY = "Q City"
-    SAINIKPURI = "Sainikpuri"
-    SANGAREDDY = "Sangareddy"
-    SAROOR_NAGAR = "Saroor Nagar"
-    SERILINGAMPALLY = "Serilingampally"
-    SHAMSHABAD = "Shamshabad"
-    SIVARAMPALLI = "Sivarampalli"
-    SURARAM = "Suraram"
-    TARNAKA = "Tarnaka"
-    TOLI_CHOWKI = "Toli Chowki"
-    UPPAL = "Uppal"
-    VANASTHALIPURAM = "Vanasthalipuram"
+    KARKHANA = "KARKHANA"
+    KOMPALLY = "KOMPALLY"
+    KONDAPUR = "KONDAPUR"
+    KUKATPALLY = "KUKATPALLY"
+    LB_NAGAR = "LB NAGAR"
+    MADHAPUR = "MADHAPUR"
+    MALAKPET = "MALAKPET"
+    MANIKONDA = "MANIKONDA"
+    MASAB_TANK = "MASAB TANK"
+    MEDCHAL_ROAD = "MEDCHAL ROAD"
+    MIYAPUR = "MIYAPUR"
+    MOKILA = "MOKILA"
+    MOOSAPET = "MOOSAPET"
+    NAGOLE = "NAGOLE"
+    NARAYANGUDA = "NARAYANGUDA"
+    NIZAMPET = "NIZAMPET"
+    PATANCHERU = "PATANCHERU"
+    PEERZADIGUDA = "PEERZADIGUDA"
+    Q_CITY = "Q CITY"
+    SAINIKPURI = "SAINIKPURI"
+    SANGAREDDY = "SANGAREDDY"
+    SAROOR_NAGAR = "SAROOR NAGAR"
+    SERILINGAMPALLY = "SERILINGAMPALLY"
+    SHAMSHABAD = "SHAMSHABAD"
+    SIVARAMPALLI = "SIVARAMPALLI"
+    SURARAM = "SURARAM"
+    TARNAKA = "TARNAKA"
+    TOLI_CHOWKI = "TOLI CHOWKI"
+    UPPAL = "UPPAL"
+    VANASTHALIPURAM = "VANASTHALIPURAM"

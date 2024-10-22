@@ -45,27 +45,41 @@ class UserPreferenceDetails(models.Model):
 
 
 class Location(models.Model):
-    city_name = models.CharField(max_length=50,
-                                 choices=AreaEnum.list_of_values(), unique=True)
+    City = models.CharField(max_length=150,
+                            choices=LocationChoices.list_of_values(),
+                            default="Hyderabad")
+    area = models.CharField(max_length=50,
+                            choices=AreaEnum.list_of_values(), unique=True)
 
     def __str__(self):
-        return self.city_name
+        return self.area
 
 
-class UserLocationWisePreferences(models.Model):
+class LocationWiseCategoryDetails(models.Model):
     location = models.ForeignKey(Location, on_delete=models.CASCADE)
-    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
-    high_percentage = models.FloatField(null=True, blank=True)
-    medium_percentage = models.FloatField(null=True, blank=True)
-    low_percentage = models.FloatField(null=True, blank=True)
-    category = models.CharField(max_length=50,
-                                choices=Category.list_of_values())
+    Rent_percentage = models.FloatField(max_length=120)
+    Food_percentage = models.FloatField(max_length=120)
+    Shopping_percentage = models.FloatField(max_length=120)
+    Travelling_percentage = models.FloatField(max_length=120)
+    Health_percentage = models.FloatField(max_length=120)
+    Entertainment_percentage = models.FloatField(max_length=120)
+    Savings_percentage = models.FloatField(max_length=120)
+    Miscellaneous_percentage = models.FloatField(max_length=120)
 
-    class Meta:
-        unique_together = ('location', 'category',)
+    gender = models.CharField(
+        max_length=10,
+        choices=GenderChoices.list_of_values(),
+        # Use the static method from the imported class
+    )
+
+    preference = models.CharField(
+        max_length=150,
+        choices=PreferenceChoices.list_of_values(),
+        # Use the static method from the imported class
+    )
 
     def __str__(self):
-        return f"{self.location.name} - {self.category}"
+        return f"{self.location} - {self.preference}"
 
 
 class UserExpense(models.Model):
