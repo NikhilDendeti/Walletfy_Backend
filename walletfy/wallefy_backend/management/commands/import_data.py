@@ -146,7 +146,7 @@ class Command(BaseCommand):
 
                         # Get or create the Location entry
                         location, created = Location.objects.get_or_create(
-                            City=city_name,
+                            city=city_name,
                             area=city_name
                             # Assuming area is the same as city for now
                         )
