@@ -182,6 +182,8 @@ def get_user_all_transactions(request):
 
     all_transactions = UserExpense.objects.filter(user=user).order_by('-date')
 
+    transactions = []
+
     transactions_by_date = {}
 
     for transaction in all_transactions:
@@ -198,5 +200,11 @@ def get_user_all_transactions(request):
             'category': transaction.category
         })
 
-    return JsonResponse({'transactions_by_date': transactions_by_date},
-                        status=200)
+    for date, transaction_list in transactions_by_date.items():
+        transactions.append({
+            'date': date,
+            'transactions': transaction_list
+
+        })
+
+    return JsonResponse({'transactions': transactions}, status=200)
