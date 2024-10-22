@@ -3,11 +3,88 @@ from decimal import Decimal, InvalidOperation
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Sum
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from rest_framework.decorators import api_view
+from rest_framework import status
+from rest_framework.decorators import api_view, authentication_classes, \
+    permission_classes
+from rest_framework.response import Response
 
 from .Enums import TransactionType, Category
-from .models import User, UserExpense, UserPreferenceDetails, UserProfile
+from .models import User, UserExpense, UserPreferenceDetails, UserProfile, \
+    Location, LocationWiseCategoryDetails
+
+
+@api_view(['POST'])
+@authentication_classes([])
+@permission_classes([])
+def get_user_expense_suggestions(request):
+    try:
+
+        user_id = request.data.get('user_id')
+        salary = request.data.get('salary')
+
+        if not salary:
+            return Response({"error": "Salary is required."},
+                            status=status.HTTP_400_BAD_REQUEST)
+        if not user_id:
+            return Response({"error": "User ID is required."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        user = get_object_or_404(User, id=user_id)
+
+        user_profile = get_object_or_404(UserProfile, user=user)
+
+        user_preferences = UserPreferenceDetails.objects.get(
+            user=user_profile)
+
+        user_location_area = user_preferences.location
+        print(f"User's location (area): {user_location_area}")
+
+        location = get_object_or_404(Location, area=user_location_area)
+
+        location_details = get_object_or_404(LocationWiseCategoryDetails,
+                                             location=location,
+                                             gender=user_profile.gender,
+                                             preference=user_preferences.preference)
+
+        base_amount = Decimal(salary)
+
+        rent_amount = base_amount * (location_details.Rent_percentage / 100)
+        food_amount = base_amount * (location_details.Food_percentage / 100)
+        shopping_amount = base_amount * (
+                location_details.Shopping_percentage / 100)
+        travelling_amount = base_amount * (
+                location_details.Travelling_percentage / 100)
+        health_amount = base_amount * (location_details.Health_percentage / 100)
+        entertainment_amount = base_amount * (
+                location_details.Entertainment_percentage / 100)
+        savings_amount = base_amount * (
+                location_details.Savings_percentage / 100)
+        miscellaneous_amount = base_amount * (
+                location_details.Miscellaneous_percentage / 100)
+
+        data = {
+            'salary': base_amount,
+            'rent': rent_amount,
+            'food': food_amount,
+            'shopping': shopping_amount,
+            'travelling': travelling_amount,
+            'health': health_amount,
+            'entertainment': entertainment_amount,
+            'savings': savings_amount,
+            'miscellaneous': miscellaneous_amount,
+            'gender': user_profile.gender,
+            'preference': user_preferences.preference,
+            'location': "Hyderabad",
+            'city': location.City,
+            'user_id': user_id
+        }
+
+        return Response(data, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["POST"])

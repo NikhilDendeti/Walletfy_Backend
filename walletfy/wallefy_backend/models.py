@@ -57,14 +57,14 @@ class Location(models.Model):
 
 class LocationWiseCategoryDetails(models.Model):
     location = models.ForeignKey(Location, on_delete=models.CASCADE)
-    Rent_percentage = models.FloatField(max_length=120)
-    Food_percentage = models.FloatField(max_length=120)
-    Shopping_percentage = models.FloatField(max_length=120)
-    Travelling_percentage = models.FloatField(max_length=120)
-    Health_percentage = models.FloatField(max_length=120)
-    Entertainment_percentage = models.FloatField(max_length=120)
-    Savings_percentage = models.FloatField(max_length=120)
-    Miscellaneous_percentage = models.FloatField(max_length=120)
+    Rent_percentage = models.DecimalField(max_digits=10, decimal_places=2)
+    Food_percentage = models.DecimalField(max_digits=10, decimal_places=2)
+    Shopping_percentage = models.DecimalField(max_digits=10, decimal_places=2)
+    Travelling_percentage = models.DecimalField(max_digits=10, decimal_places=2)
+    Health_percentage = models.DecimalField(max_digits=10, decimal_places=2)
+    Entertainment_percentage = models.DecimalField(max_digits=10, decimal_places=2)
+    Savings_percentage = models.DecimalField(max_digits=10, decimal_places=2)
+    Miscellaneous_percentage = models.DecimalField(max_digits=10, decimal_places=2)
 
     gender = models.CharField(
         max_length=10,

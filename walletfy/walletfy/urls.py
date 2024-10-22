@@ -26,7 +26,8 @@ urlpatterns = [
          name='get_user_last_five_transactions'),
     path('get-user-all-transaction/', get_user_all_transactions,
          name='get_user_all_transactions'),
-    path('get-user-financial-transaction/', get_user_pie_chart_financial_transactions,
+    path('get-user-financial-transaction/',
+         get_user_pie_chart_financial_transactions,
          name='get_user_financial_transactions'),
     path('get-transaction-filters/', get_transaction_filters,
          name='get_transaction_filters'),
@@ -34,4 +35,6 @@ urlpatterns = [
          name='delete_user_expense'),
     path('get-transaction-details/', get_transaction_details,
          name='get_transaction_details'),
+    path('get-user-expense-suggestions/', get_user_expense_suggestions,
+         name='get_user_expense_suggestions'),
 ]
