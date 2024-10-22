@@ -22,4 +22,10 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('account-balance/', update_user_expense, name='account_balance'),
     path('get-user-details/', get_user_details, name='get_user_details'),
+    path('update-user-expense/', update_user_expense,
+         name='update_user_expense'),
+    path('get-user-five-transaction/', get_last_five_transactions,
+         name='get_user_last_five_transactions'),
+    path('get-user-all-transaction/', get_user_all_transactions,
+         name='get_user_all_transactions')
 ]
