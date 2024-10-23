@@ -21,14 +21,16 @@ def get_user_details(request):
     user_preferential_instance, created = UserPreferenceDetails.objects.get_or_create(
         user=user
     )
-    # salary = user_preferential_instance.salary
+
     current_month = timezone.now().month
     current_year = timezone.now().year
+
     total_expense = UserExpense.objects.filter(
         user=user,
         date__month=current_month,
         date__year=current_year
     ).aggregate(total=Sum('expenses_amount'))['total'] or 0
+
     round_total_expense = round(total_expense, 2)
 
     data = {
@@ -39,6 +41,45 @@ def get_user_details(request):
     }
 
     return JsonResponse(data, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+def store_user_data(request):
+    user_id = request.user.user_id
+    user = get_object_or_404(User, user_id=user_id)
+
+    salary = request.data.get('salary')
+    if not salary:
+        return JsonResponse({'message': 'Salary is required.'}, status=400)
+
+    spending_preference = request.data.get('user_preference')
+    if not spending_preference:
+        return JsonResponse({'message': 'Spending preference is required.'},
+                            status=400)
+
+    location = request.data.get('location')
+    if not location:
+        return JsonResponse({'message': 'Location is required.'}, status=400)
+
+    user_preference, created = UserPreferenceDetails.objects.get_or_create(
+        user=user,
+        defaults={
+            'salary': salary,
+            'preference': spending_preference,
+            'location': location,
+            'account_balance': Decimal(salary)
+        }
+    )
+
+    if not created:
+        user_preference.salary = salary
+        user_preference.preference = spending_preference
+        user_preference.location = location
+        user_preference.account_balance = Decimal(salary)
+        user_preference.save()
+
+    return JsonResponse({'message': 'User data stored successfully.'},
+                        status=200)
 
 
 @api_view(['POST'])
@@ -73,7 +114,7 @@ def update_user_expense(request):
 
     try:
         user_preferences = UserPreferenceDetails.objects.get(user=user)
-    except UserPreferenceDetails.DoesNotExist:
+    except ObjectDoesNotExist:
         return JsonResponse({'message': 'User preference details not found.'},
                             status=404)
 
@@ -267,8 +308,19 @@ def get_user_pie_chart_financial_transactions(request):
 
     return JsonResponse({
         'user_expenses_history': list(user_expenses_history),
-        'total_expense': total_expense
+        'total_expense': round(total_expense, 2)
     }, status=200)
+
+
+@api_view(['POST'])
+def get_user_income_pie_chart(request):
+    user_id = request.user.user_id
+    try:
+        user = User.objects.get(user_id=user_id)
+    except ObjectDoesNotExist:
+        return JsonResponse({'message': 'User not found.'}, status=404)
+    user_income = UserPreferenceDetails.objects.get(user=user).salary
+    return JsonResponse({'user_income': user_income}, status=200)
 
 
 @api_view(['POST'])
@@ -285,8 +337,11 @@ def delete_user_expense(request):
         expense = UserExpense.objects.get(id=transaction_id)
     except ObjectDoesNotExist:
         return JsonResponse({'message': 'Expense not found.'}, status=404)
-
     expense.delete()
+    expense_amount = expense.expenses_amount
+    update_account_balance = UserPreferenceDetails.objects.get(user=user)
+    update_account_balance.account_balance += expense_amount
+    update_account_balance.save()
 
     return JsonResponse({'message': 'Expense deleted successfully.'},
                         status=200)
