@@ -13,49 +13,29 @@ from .models import User, UserExpense, UserPreferenceDetails, UserProfile, \
     Location, LocationWiseCategoryDetails
 
 
-@api_view(['POST'])
+@api_view(['GET'])
 def get_user_details(request):
-    user_id = request.data.get('user_id')
+    user_id = request.user.user_id
     user = get_object_or_404(User, user_id=user_id)
 
-    salary = request.data.get('salary')
-    if not salary:
-        return Response({"error": "Salary is required."},
-                        status=status.HTTP_400_BAD_REQUEST)
-
-    user_preference = request.data.get('user_preference')
-    if not user_preference:
-        return Response({"error": "User preference is required."},
-                        status=status.HTTP_400_BAD_REQUEST)
-
-    location = request.data.get('location')
-    if not location:
-        return Response({"error": "Location is required."},
-                        status=status.HTTP_400_BAD_REQUEST)
-
     user_preferential_instance, created = UserPreferenceDetails.objects.get_or_create(
-        user=user,
-        defaults={
-            'salary': salary,
-            'preference': user_preference,
-            'location': location,
-            'account_balance': salary
-
-        }
+        user=user
     )
-
-    if not created:
-        user_preferential_instance.salary = salary
-        user_preferential_instance.preference = user_preference
-        user_preferential_instance.location = location
-        user_preferential_instance.account_balance = salary  # Optional: reset balance to salary
-        user_preferential_instance.save()
+    # salary = user_preferential_instance.salary
+    current_month = timezone.now().month
+    current_year = timezone.now().year
+    total_expense = UserExpense.objects.filter(
+        user=user,
+        date__month=current_month,
+        date__year=current_year
+    ).aggregate(total=Sum('expenses_amount'))['total'] or 0
+    round_total_expense = round(total_expense, 2)
 
     data = {
         'user_name': user.username,
         'Income': user_preferential_instance.salary,
-        'Account Balance': user_preferential_instance.account_balance,
-        'Expense': 0
+        'Account_Balance': user_preferential_instance.account_balance,
+        'Expense': round_total_expense
     }
 
     return JsonResponse(data, status=status.HTTP_200_OK)
@@ -63,7 +43,7 @@ def get_user_details(request):
 
 @api_view(['POST'])
 def update_user_expense(request):
-    user_id = request.data.get('user')
+    user_id = request.user.user_id
 
     try:
         user = User.objects.get(user_id=user_id)
@@ -117,10 +97,12 @@ def update_user_expense(request):
         date__month=current_month,
         date__year=current_year
     ).aggregate(total=Sum('expenses_amount'))['total'] or 0
+    total_expense = round(total_expense, 2)
 
     return JsonResponse({
         'username': user.username,
         'account_balance': str(user_preferences.account_balance),
+        'income': str(user_preferences.salary),
         'total_expense': str(total_expense),
         'description': user_expense.description
     }, status=200)
@@ -128,7 +110,8 @@ def update_user_expense(request):
 
 @api_view(['POST'])
 def get_last_five_transactions(request):
-    user_id = request.data.get('user')
+    user_id = request.user.user_id
+
     try:
         user = User.objects.get(user_id=user_id)
     except ObjectDoesNotExist:
@@ -137,48 +120,72 @@ def get_last_five_transactions(request):
     last_three_transactions = UserExpense.objects.filter(user=user).order_by(
         '-date')[:5]
 
-    transactions_data = []
+    transactions_by_date = {}
+
     for transaction in last_three_transactions:
-        transactions_data.append({
+        transaction_date = transaction.date.strftime(
+            '%Y-%m-%d')
+        if transaction_date not in transactions_by_date:
+            transactions_by_date[transaction_date] = []
+
+        transactions_by_date[transaction_date].append({
             'category': transaction.category,
             'amount': str(transaction.expenses_amount),
-            'date': transaction.date.strftime('%Y-%m-%d'),
             'time': transaction.date.strftime('%I:%M %p'),
             'description': transaction.description,
             'transaction_id': transaction.id
         })
 
-    return JsonResponse({'transactions': transactions_data}, status=200)
+    response_data = []
+    for date, transaction_list in transactions_by_date.items():
+        response_data.append({
+            'date': date,
+            'transactions': transaction_list
+        })
+
+    return JsonResponse({'transactions_by_date': response_data}, status=200)
 
 
 @api_view(['POST'])
 def get_last_all_transactions(request):
-    user_id = request.data.get('user')
+    user_id = request.user.user_id
+
     try:
         user = User.objects.get(user_id=user_id)
     except ObjectDoesNotExist:
         return JsonResponse({'message': 'User not found.'}, status=404)
 
-    last_three_transactions = UserExpense.objects.filter(user=user).order_by(
-        '-date')
+    transactions = UserExpense.objects.filter(user=user).order_by('-date')
 
-    transactions_data = []
-    for transaction in last_three_transactions:
-        transactions_data.append({
+    transactions_by_date = {}
+
+    for transaction in transactions:
+        transaction_date = transaction.date.strftime(
+            '%Y-%m-%d')
+        if transaction_date not in transactions_by_date:
+            transactions_by_date[transaction_date] = []
+
+        transactions_by_date[transaction_date].append({
             'category': transaction.category,
             'amount': str(transaction.expenses_amount),
-            'date': transaction.date.strftime('%Y-%m-%d'),
             'time': transaction.date.strftime('%I:%M %p'),
             'description': transaction.description,
             'transaction_id': transaction.id
         })
 
-    return JsonResponse({'transactions': transactions_data}, status=200)
+    response_data = []
+    for date, transaction_list in transactions_by_date.items():
+        response_data.append({
+            'date': date,
+            'transactions': transaction_list
+        })
+
+    return JsonResponse({'transactions_by_date': response_data}, status=200)
 
 
 @api_view(['POST'])
 def get_transaction_filters(request):
-    user_id = request.data.get('user')
+    user_id = request.user.user_id
 
     try:
         user = User.objects.get(user_id=user_id)
@@ -190,66 +197,48 @@ def get_transaction_filters(request):
     oldest_transaction_filter = request.data.get('Oldest')
     category_filter = request.data.get('Categories')
 
-    results = {}
+    transactions = UserExpense.objects.filter(user=user)
+
     if category_filter:
-        category_transactions = UserExpense.objects.filter(user=user,
-                                                           category=category_filter)
-        if highest_price_filter:
-            highest_transactions = category_transactions.order_by(
-                "-expenses_amount")
-            results['Categories'] = list(highest_transactions.values(
-                'category', 'expenses_amount', 'date', 'description'))
-        elif lowest_price_filter:
-            lowest_transactions = category_transactions.order_by(
-                "expenses_amount")
-            results['Categories'] = list(lowest_transactions.values(
-                'category', 'expenses_amount', 'date', 'description'
-            ))
-        elif oldest_transaction_filter:
-            oldest_transactions = category_transactions.order_by("date")
-            results['Categories'] = list(oldest_transactions.values(
-                'category', 'expenses_amount', 'date', 'description'
-            ))
-        else:
-            results['Categories'] = list(
-                category_transactions.values('category', 'expenses_amount',
-                                             'date', 'description'))
+        transactions = transactions.filter(category=category_filter)
 
-    elif highest_price_filter:
-        highest_transactions = UserExpense.objects.filter(user=user).order_by(
-            '-expenses_amount')
-        results['Highest'] = list(
-            highest_transactions.values('category', 'expenses_amount',
-                                        'date', 'description'))
-
+    if highest_price_filter:
+        transactions = transactions.order_by('-expenses_amount')
     elif lowest_price_filter:
-        lowest_transactions = UserExpense.objects.filter(user=user).order_by(
-            'expenses_amount')
-        results['Lowest'] = list(
-            lowest_transactions.values('category', 'expenses_amount', 'date',
-                                       'description'))
-
+        transactions = transactions.order_by('expenses_amount')
     elif oldest_transaction_filter:
-        oldest_transactions = UserExpense.objects.filter(user=user).order_by(
-            'date')
-        results['Oldest'] = list(
-            oldest_transactions.values('category', 'expenses_amount', 'date',
-                                       'description'))
+        transactions = transactions.order_by('date')
     else:
-        results['Categories'] = list(
-            UserExpense.objects.filter(user=user).values('category',
-                                                         'expenses_amount',
-                                                         'date',
-                                                         'description').order_by(
-                '-date'
-            ))
+        transactions = transactions.order_by('-date')
 
-    return JsonResponse(results, status=200)
+    transactions_by_date = {}
+
+    for transaction in transactions:
+        transaction_date = transaction.date.strftime('%Y-%m-%d')
+        if transaction_date not in transactions_by_date:
+            transactions_by_date[transaction_date] = []
+
+        transactions_by_date[transaction_date].append({
+            'category': transaction.category,
+            'amount': str(transaction.expenses_amount),
+            'time': transaction.date.strftime('%I:%M %p'),
+            'description': transaction.description,
+            'transaction_id': transaction.id
+        })
+
+    response_data = []
+    for date, transaction_list in transactions_by_date.items():
+        response_data.append({
+            'date': date,
+            'transactions': transaction_list
+        })
+
+    return JsonResponse({'transactions_by_date': response_data}, status=200)
 
 
 @api_view(['POST'])
 def get_user_pie_chart_financial_transactions(request):
-    user_id = request.data.get('user')
+    user_id = request.user.user_id
     month = request.data.get('month')
 
     if not month:
@@ -282,9 +271,9 @@ def get_user_pie_chart_financial_transactions(request):
     }, status=200)
 
 
-@api_view(['GET'])
+@api_view(['POST'])
 def delete_user_expense(request):
-    user_id = request.data.get('user')
+    user_id = request.user.user_id
     transaction_id = request.data.get('expense_id')
 
     try:
@@ -325,7 +314,7 @@ def get_transaction_details(request):
 def get_user_expense_suggestions(request):
     try:
 
-        user_id = request.data.get('user')
+        user_id = request.user.user_id
         if not user_id:
             return Response({"error": "User ID is required."},
                             status=status.HTTP_400_BAD_REQUEST)
@@ -392,7 +381,7 @@ def get_user_expense_suggestions(request):
 
 @api_view(['POST'])
 def get_user_expenses_comparison_at_eom(request):
-    user_id = request.data.get('user')
+    user_id = request.user.user_id
     month = request.data.get('month')
 
     if not month:

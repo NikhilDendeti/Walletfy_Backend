@@ -46,7 +46,6 @@ class UserProfile(models.Model):
         return f"{self.user}'s Profile"
 
 
-# UserPreferenceDetails Model for storing salary and preferences
 class UserPreferenceDetails(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     salary = models.DecimalField(max_digits=10, decimal_places=2)
@@ -65,7 +64,6 @@ class UserPreferenceDetails(models.Model):
         return f"{self.user} - {self.location}"
 
 
-# Location Model
 class Location(models.Model):
     city = models.CharField(max_length=150,
                             choices=LocationChoices.list_of_values(),
@@ -77,7 +75,6 @@ class Location(models.Model):
         return self.area
 
 
-# LocationWiseCategoryDetails Model for storing expense percentages
 class LocationWiseCategoryDetails(models.Model):
     location = models.ForeignKey(Location, on_delete=models.CASCADE)
     Rent_percentage = models.DecimalField(max_digits=10, decimal_places=2)
@@ -100,7 +97,6 @@ class LocationWiseCategoryDetails(models.Model):
         return f"{self.location} - {self.preference}"
 
 
-# UserExpense Model for tracking expenses
 class UserExpense(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     category = models.CharField(max_length=50,
