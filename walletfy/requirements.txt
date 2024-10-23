@@ -4,9 +4,9 @@ psycopg
 restframaework
 asgiref==3.8.1
 Django==5.1.2
-django-cors-headers==4.5.0
-djangorestframework==3.15.2
-oauth2_provider==0.0
-sqlparse==0.5.1
-typing_extensions==4.12.2
+django-cors-headers
+djangorestframework
+oauth2_provider
+sqlparse
+typing_extensions
 psycopg2-binary
