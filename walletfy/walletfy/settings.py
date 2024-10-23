@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -22,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-b+38=i_tuqqs*!76jparowq)qm&=gxb(3@58uwqo@fknut52=='
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
 
@@ -87,13 +87,18 @@ WSGI_APPLICATION = 'walletfy.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
+import os
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'defaultdb',  # Matches DATABASE_NAME
+        'USER': os.environ.get('DATABASE_USER'),  # Matches DATABASE_USER
+        'PASSWORD': os.environ.get('DATABASE_PASSWORD'),  # Matches DATABASE_PASS
+        'HOST': os.environ.get('DATABASE_HOST'),  # Matches DATABASE_HOST
+        'PORT': '16751',  # Matches DATABASE_PORT
     }
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -141,3 +146,15 @@ CLIENT_SECRET = "ZjL7Mo8pL3XZUi2V1u26lL8Wh1Z6ZX7JoVV3O8MPsxwmwQXW4lR9CEom3j3d9on
 ACCESS_TOKEN_EXPIRE_SECONDS = 3600
 REFRESH_TOKEN_EXPIRE_SECONDS = 86400
 CORS_ALLOW_ALL_ORIGINS = True
+import os
+DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+STATICFILES_STORAGE = "storages.backends.s3boto3.S3StaticStorage"
+
+AWS_S3_REGION_NAME = os.environ.get("OBJECT_STORAGE_REGION")
+AWS_S3_ENDPOINT_URL = f"https://{AWS_S3_REGION_NAME}.vultrobjects.com"
+AWS_S3_USE_SSL = True
+AWS_STORAGE_BUCKET_NAME = os.environ.get("OBJECT_STORAGE_BUCKET_NAME")
+AWS_ACCESS_KEY_ID = os.environ.get("OBJECT_STORAGE_ACCESS_KEY")
+AWS_SECRET_ACCESS_KEY = os.environ.get("OBJECT_STORAGE_SECRET_KEY")
+AWS_DEFAULT_ACL="public-read"
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
