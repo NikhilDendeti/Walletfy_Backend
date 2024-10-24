@@ -499,6 +499,11 @@ def get_user_expenses_comparison_at_eom(request):
             2),
     }
 
+    # Handle category naming mismatch, for example, mapping 'Travel' to 'Travelling'
+    category_mapping = {
+        'Travel': 'Travelling'
+    }
+
     user_expenses_history = UserExpense.objects.filter(
         user=user,
         date__month=month
@@ -515,7 +520,9 @@ def get_user_expenses_comparison_at_eom(request):
     for expense in user_expenses_history:
         category = expense['category']
         actual_amount = round(float(expense['total']), 2)
-        recommended_amount = recommended_amounts.get(category, 0)
+        # Map category to standardized name if necessary
+        standardized_category = category_mapping.get(category, category)
+        recommended_amount = recommended_amounts.get(standardized_category, 0)
 
         if actual_amount > recommended_amount:
             over_spent.append({
@@ -532,7 +539,8 @@ def get_user_expenses_comparison_at_eom(request):
 
     # Include categories with zero spending in under-spent (those not present in user_expenses_history)
     for category, recommended_amount in recommended_amounts.items():
-        if not any(expense['category'] == category for expense in
+        if not any(expense['category'] == category or expense[
+            'category'] == category_mapping.get(category) for expense in
                    user_expenses_history):
             under_spent.append({
                 'category': category,
