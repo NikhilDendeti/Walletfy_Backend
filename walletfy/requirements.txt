@@ -8,4 +8,4 @@ sqlparse
 typing_extensions
 django-oauth-toolkit
 psycopg2-binary
-
+whitenoise

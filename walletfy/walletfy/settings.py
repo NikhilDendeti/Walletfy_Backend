@@ -28,8 +28,6 @@ ALLOWED_HOSTS = [
     '*'
 ]
 
-# Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -91,6 +89,7 @@ WSGI_APPLICATION = 'walletfy.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 import os
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql' if os.environ.get(
@@ -98,13 +97,14 @@ DATABASES = {
         'NAME': 'defaultdb' if os.environ.get("DATABASE_USER") else \
             BASE_DIR / 'db.sqlite3',  # Matches DATABASE_NAME
         'USER': os.environ.get('DATABASE_USER'),  # Matches DATABASE_USER
-        'PASSWORD': os.environ.get('DATABASE_PASSWORD'),  # Matches DATABASE_PASS
+        'PASSWORD': os.environ.get('DATABASE_PASSWORD'),
+        # Matches DATABASE_PASS
         'HOST': os.environ.get('DATABASE_HOST'),  # Matches DATABASE_HOST
-        'PORT': '16751' if  os.environ.get('DATABASE_USER') else None,  # Matches DATABASE_PORT
+        'PORT': '16751' if os.environ.get('DATABASE_USER') else None,
+        # Matches DATABASE_PORT
     },
 
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -158,9 +158,7 @@ REFRESH_TOKEN_EXPIRE_SECONDS = 86400
 CORS_ALLOW_ALL_ORIGINS = True
 import os
 
-
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-
 
 AWS_S3_REGION_NAME = os.environ.get("OBJECT_STORAGE_REGION")
 AWS_S3_ENDPOINT_URL = f"https://{AWS_S3_REGION_NAME}.vultrobjects.com"
@@ -168,5 +166,4 @@ AWS_S3_USE_SSL = True
 AWS_STORAGE_BUCKET_NAME = os.environ.get("OBJECT_STORAGE_BUCKET_NAME")
 AWS_ACCESS_KEY_ID = os.environ.get("OBJECT_STORAGE_ACCESS_KEY")
 AWS_SECRET_ACCESS_KEY = os.environ.get("OBJECT_STORAGE_SECRET_KEY")
-AWS_DEFAULT_ACL="public-read"
-
+AWS_DEFAULT_ACL = "public-read"
