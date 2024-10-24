@@ -34,12 +34,14 @@ def get_user_details(request):
 
     round_total_expense = round(total_expense, 2)
 
+    # Use string formatting to ensure 0.00 format
     data = {
         'user_name': user.username,
-        'Income': user_preferential_instance.salary,
-        'Account_Balance': user_preferential_instance.account_balance,
-        'Expense': round_total_expense
+        'Income': f"{user_preferential_instance.salary:.2f}",
+        'Account_Balance': f"{user_preferential_instance.account_balance:.2f}",
+        'Expense': f"{round_total_expense:.2f}"
     }
+
     return JsonResponse(data, status=status.HTTP_200_OK)
 
 
@@ -72,14 +74,17 @@ def store_user_data(request):
     )
 
     if not created:
-        user_preference.salary = salary
+        user_preference.salary = Decimal(salary)
         user_preference.preference = spending_preference
         user_preference.location = location
         user_preference.account_balance = Decimal(salary)
         user_preference.save()
 
-    return JsonResponse({'message': 'User data stored successfully.'},
-                        status=200)
+    return JsonResponse({
+        'message': 'User data stored successfully.',
+        'Income': f"{user_preference.salary:.2f}",
+        'Account_Balance': f"{user_preference.account_balance:.2f}"
+    }, status=200)
 
 
 @api_view(['POST'])
