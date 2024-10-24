@@ -32,7 +32,7 @@ def get_user_details(request):
         date__year=current_year
     ).aggregate(total=Sum('expenses_amount'))['total'] or 0
 
-    round_total_expense = round(decimal(total_expense, 2))
+    round_total_expense = round(total_expense, 2)
 
     data = {
         'user_name': user.username,
@@ -40,7 +40,6 @@ def get_user_details(request):
         'Account_Balance': user_preferential_instance.account_balance,
         'Expense': round_total_expense
     }
-    print(data)
     return JsonResponse(data, status=status.HTTP_200_OK)
 
 
