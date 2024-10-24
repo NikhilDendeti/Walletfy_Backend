@@ -30,7 +30,7 @@ def get_user_details(request):
         user=user,
         date__month=current_month,
         date__year=current_year
-    ).aggregate(total=Sum('expenses_amount'))['total'] or 0
+    ).aggregate(total=Sum('expenses_amount'))['total'] or 0.00
 
     round_total_expense = round(total_expense, 2)
 
