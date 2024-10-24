@@ -24,7 +24,9 @@ SECRET_KEY = 'django-insecure-b+38=i_tuqqs*!76jparowq)qm&=gxb(3@58uwqo@fknut52==
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = [
+    '*'
+]
 
 # Application definition
 
@@ -90,13 +92,16 @@ WSGI_APPLICATION = 'walletfy.wsgi.application'
 import os
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'defaultdb',  # Matches DATABASE_NAME
+        'ENGINE': 'django.db.backends.postgresql' if os.environ.get(
+            "DATABASE_USER") else 'django.db.backends.sqlite3',
+        'NAME': 'defaultdb' if os.environ.get("DATABASE_USER") else \
+            BASE_DIR / 'db.sqlite3',  # Matches DATABASE_NAME
         'USER': os.environ.get('DATABASE_USER'),  # Matches DATABASE_USER
         'PASSWORD': os.environ.get('DATABASE_PASSWORD'),  # Matches DATABASE_PASS
         'HOST': os.environ.get('DATABASE_HOST'),  # Matches DATABASE_HOST
-        'PORT': '16751',  # Matches DATABASE_PORT
-    }
+        'PORT': '16751' if  os.environ.get('DATABASE_USER') else None,  # Matches DATABASE_PORT
+    },
+
 }
 
 
@@ -157,4 +162,4 @@ AWS_STORAGE_BUCKET_NAME = os.environ.get("OBJECT_STORAGE_BUCKET_NAME")
 AWS_ACCESS_KEY_ID = os.environ.get("OBJECT_STORAGE_ACCESS_KEY")
 AWS_SECRET_ACCESS_KEY = os.environ.get("OBJECT_STORAGE_SECRET_KEY")
 AWS_DEFAULT_ACL="public-read"
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
