@@ -7,3 +7,5 @@ oauth2_provider
 sqlparse
 typing_extensions
 django-oauth-toolkit
+psycopg2-binary
+
