@@ -490,14 +490,14 @@ def get_user_expenses_comparison_at_eom(request):
         'Health': round(
             base_amount * (location_details.Health_percentage / 100), 2),
         'Entertainment': round(
-            base_amount * (location_details.Entertainment_percentage / 100), 2),
+            base_amount * (location_details.Entertainment_percentage / 100),
+            2),
         'Savings': round(
             base_amount * (location_details.Savings_percentage / 100), 2),
         'Miscellaneous': round(
-            base_amount * (location_details.Miscellaneous_percentage / 100), 2),
+            base_amount * (location_details.Miscellaneous_percentage / 100),
+            2),
     }
-
-    print(f"Recommended amounts: {recommended_amounts}")
 
     user_expenses_history = UserExpense.objects.filter(
         user=user,
@@ -508,29 +508,41 @@ def get_user_expenses_comparison_at_eom(request):
         user=user, date__month=month
     ).aggregate(total=Sum('expenses_amount'))['total'] or 0
 
-    print(f"User's actual expenses: {list(user_expenses_history)}")
+    # Categorize expenses into over-spent and under-spent
+    over_spent = []
+    under_spent = []
 
-    expenses_with_recommended = []
     for expense in user_expenses_history:
         category = expense['category']
-        actual_amount = round(expense['total'],
-                              2)
-        recommended_amount = recommended_amounts.get(category,
-                                                     0)
+        actual_amount = round(float(expense['total']), 2)
+        recommended_amount = recommended_amounts.get(category, 0)
 
-        print(
-            f"Category: {category}, Actual: {actual_amount}, Recommended: {recommended_amount}")
+        if actual_amount > recommended_amount:
+            over_spent.append({
+                'category': category,
+                'actual_amount': actual_amount,
+                'recommended_amount': recommended_amount
+            })
+        else:
+            under_spent.append({
+                'category': category,
+                'actual_amount': actual_amount,
+                'recommended_amount': recommended_amount
+            })
 
-        expenses_with_recommended.append({
-            'category': category,
-            'actual_amount': actual_amount,
-            'recommended_amount': recommended_amount
-        })
+    # Include categories with zero spending in under-spent (those not present in user_expenses_history)
+    for category, recommended_amount in recommended_amounts.items():
+        if not any(expense['category'] == category for expense in
+                   user_expenses_history):
+            under_spent.append({
+                'category': category,
+                'actual_amount': 0.0,
+                'recommended_amount': recommended_amount
+            })
 
     return JsonResponse({
-        'user_expenses_history': expenses_with_recommended,
-        'total_expense': round(total_expense, 2),
-
+        'over_spent': over_spent,
+        'under_spent': under_spent,
+        'total_expense': round(float(total_expense), 2),
         'recommended_amounts': recommended_amounts
-
     }, status=200)
