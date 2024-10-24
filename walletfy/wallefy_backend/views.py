@@ -312,7 +312,7 @@ def get_user_pie_chart_financial_transactions(request):
     }, status=200)
 
 
-@api_view(['POST'])
+@api_view(['GET'])
 def get_user_income_pie_chart(request):
     user_id = request.user.user_id
     try:
