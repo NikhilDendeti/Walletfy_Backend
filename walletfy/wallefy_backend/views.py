@@ -35,9 +35,9 @@ def get_user_details(request):
 
     data = {
         'user_name': user.username,
-        'Income': user_preferential_instance.salary,
-        'Account_Balance': user_preferential_instance.account_balance,
-        'Expense': round_total_expense
+        'Income': str(user_preferential_instance.salary),
+        'Account_Balance': str(user_preferential_instance.account_balance),
+        'Expense': str(round_total_expense)
     }
 
     return JsonResponse(data, status=status.HTTP_200_OK)
