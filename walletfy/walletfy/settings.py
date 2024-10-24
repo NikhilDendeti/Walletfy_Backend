@@ -137,7 +137,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -162,4 +166,3 @@ AWS_STORAGE_BUCKET_NAME = os.environ.get("OBJECT_STORAGE_BUCKET_NAME")
 AWS_ACCESS_KEY_ID = os.environ.get("OBJECT_STORAGE_ACCESS_KEY")
 AWS_SECRET_ACCESS_KEY = os.environ.get("OBJECT_STORAGE_SECRET_KEY")
 AWS_DEFAULT_ACL="public-read"
-# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
