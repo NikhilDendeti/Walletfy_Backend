@@ -1,4 +1,5 @@
 from decimal import Decimal, InvalidOperation
+from unicodedata import decimal
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Sum
@@ -37,9 +38,9 @@ def get_user_details(request):
         'user_name': user.username,
         'Income': str(user_preferential_instance.salary),
         'Account_Balance': str(user_preferential_instance.account_balance),
-        'Expense': str(round_total_expense)
+        'Expense': str(decimal(round_total_expense))
     }
-
+    print(data)
     return JsonResponse(data, status=status.HTTP_200_OK)
 
 
