@@ -29,6 +29,11 @@ ALLOWED_HOSTS = [
 ]
 
 INSTALLED_APPS = [
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -44,7 +49,7 @@ INSTALLED_APPS = [
     # Custom apps
     'wallefy_backend',
 ]
-
+SITE_ID = 1
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',  # OAuth2
@@ -52,6 +57,26 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',  # Enforce authentication
     )
+}
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',  # For username/password login
+    'allauth.account.auth_backends.AuthenticationBackend',  # For allauth login
+)
+
+LOGIN_REDIRECT_URL = '/'  # Redirect after login
+ACCOUNT_LOGOUT_ON_GET = True
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'offline',
+        }
+    }
 }
 
 MIDDLEWARE = [
@@ -64,6 +89,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    'allauth.account.middleware.AccountMiddleware'
 ]
 
 ROOT_URLCONF = 'walletfy.urls'
@@ -151,8 +177,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 APPLICATION_NAME = 'Finance'
 AUTH_USER_MODEL = 'wallefy_backend.User'
-CLIENT_ID = "s8o4OHGhpZDdHnSwirlyCIhr1HYafB4UsOTtnAVnj"
-CLIENT_SECRET = "ZjL7Mo8pL3XZUi2V1u26lL8Wh1Z6ZX7JoVV3O8MPsxwmwQXW4lR9CEom3j3d9onyxbiffEleTwig9areLEDy9PqsC9OjJNDI7HTL6IEtiALAWleGxTumBdQuipXo"
+# CLIENT_ID = "s8o4OHGhpZDdHnSwirlyCIhr1HYafB4UsOTtnAVnj"
+# CLIENT_SECRET = "ZjL7Mo8pL3XZUi2V1u26lL8Wh1Z6ZX7JoVV3O8MPsxwmwQXW4lR9CEom3j3d9onyxbiffEleTwig9areLEDy9PqsC9OjJNDI7HTL6IEtiALAWleGxTumBdQuipXo"
 ACCESS_TOKEN_EXPIRE_SECONDS = 3600
 REFRESH_TOKEN_EXPIRE_SECONDS = 86400
 CORS_ALLOW_ALL_ORIGINS = True
@@ -167,3 +193,5 @@ AWS_STORAGE_BUCKET_NAME = os.environ.get("OBJECT_STORAGE_BUCKET_NAME")
 AWS_ACCESS_KEY_ID = os.environ.get("OBJECT_STORAGE_ACCESS_KEY")
 AWS_SECRET_ACCESS_KEY = os.environ.get("OBJECT_STORAGE_SECRET_KEY")
 AWS_DEFAULT_ACL = "public-read"
+CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
+CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')

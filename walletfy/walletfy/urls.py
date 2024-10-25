@@ -15,7 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 
 from wallefy_backend.user_views import get_login_interactor_view, \
     get_signup_interactor_view, get_update_password_view, \
@@ -46,5 +46,9 @@ urlpatterns = [
     path('get_transaction_details/', get_transaction_details),
     path('get_user_expense_suggestions/', get_user_expense_suggestions),
     path('get_user_expenses_comparison_at_eom/',
-         get_user_expenses_comparison_at_eom)
+         get_user_expenses_comparison_at_eom),
+
+    path('accounts/', include('allauth.urls')),
+    # Add this line to include allauth URLs
+
 ]
