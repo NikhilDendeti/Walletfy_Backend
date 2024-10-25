@@ -54,6 +54,18 @@ def store_user_data(request):
     if not salary:
         return JsonResponse({'message': 'Salary is required.'}, status=400)
 
+    if salary <= 0:
+        return JsonResponse({'message': 'Salary should not be in Negative'},
+                            status=400)
+
+    if salary < 500:
+        return JsonResponse({'message': 'Salary should be greater than 500'},
+                            status=400)
+
+    if salary > 10000000:
+        return JsonResponse({'message': 'Maximum limit is 1 Crore'},
+                            status=400)
+
     spending_preference = request.data.get('user_preference')
     if not spending_preference:
         return JsonResponse({'message': 'Spending preference is required.'},
