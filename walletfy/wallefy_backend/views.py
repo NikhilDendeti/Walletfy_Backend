@@ -451,7 +451,6 @@ def get_user_expense_suggestions(request):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-
 @api_view(['POST'])
 def get_user_expenses_comparison_at_eom(request):
     user_id = request.user.user_id
@@ -492,24 +491,14 @@ def get_user_expenses_comparison_at_eom(request):
 
     base_amount = user_preference.salary
     recommended_amounts = {
-        'Rent': round(base_amount * (location_details.Rent_percentage / 100),
-                      2),
-        'Food': round(base_amount * (location_details.Food_percentage / 100),
-                      2),
-        'Shopping': round(
-            base_amount * (location_details.Shopping_percentage / 100), 2),
-        'Travelling': round(
-            base_amount * (location_details.Travelling_percentage / 100), 2),
-        'Health': round(
-            base_amount * (location_details.Health_percentage / 100), 2),
-        'Entertainment': round(
-            base_amount * (location_details.Entertainment_percentage / 100),
-            2),
-        'Savings': round(
-            base_amount * (location_details.Savings_percentage / 100), 2),
-        'Miscellaneous': round(
-            base_amount * (location_details.Miscellaneous_percentage / 100),
-            2),
+        'Rent': round(base_amount * (location_details.Rent_percentage / 100), 2),
+        'Food': round(base_amount * (location_details.Food_percentage / 100), 2),
+        'Shopping': round(base_amount * (location_details.Shopping_percentage / 100), 2),
+        'Travelling': round(base_amount * (location_details.Travelling_percentage / 100), 2),
+        'Health': round(base_amount * (location_details.Health_percentage / 100), 2),
+        'Entertainment': round(base_amount * (location_details.Entertainment_percentage / 100), 2),
+        'Savings': round(base_amount * (location_details.Savings_percentage / 100), 2),
+        'Miscellaneous': round(base_amount * (location_details.Miscellaneous_percentage / 100), 2),
     }
 
     # Handle category naming mismatch, for example, mapping 'Travel' to 'Travelling'
@@ -526,9 +515,10 @@ def get_user_expenses_comparison_at_eom(request):
         user=user, date__month=month
     ).aggregate(total=Sum('expenses_amount'))['total'] or 0
 
-    # Categorize expenses into over-spent and under-spent
+    # Categorize expenses into over-spent, under-spent, and zero-spent
     over_spent = []
     under_spent = []
+    zero_spent = []  # New list for categories with zero spending
 
     for expense in user_expenses_history:
         category = expense['category']
@@ -543,6 +533,12 @@ def get_user_expenses_comparison_at_eom(request):
                 'actual_amount': actual_amount,
                 'recommended_amount': recommended_amount
             })
+        elif actual_amount == 0:
+            zero_spent.append({
+                'category': category,
+                'actual_amount': actual_amount,
+                'recommended_amount': recommended_amount
+            })
         else:
             under_spent.append({
                 'category': category,
@@ -550,12 +546,12 @@ def get_user_expenses_comparison_at_eom(request):
                 'recommended_amount': recommended_amount
             })
 
-    # Include categories with zero spending in under-spent (those not present in user_expenses_history)
+    # Include categories with zero spending in zero_spent (those not present in user_expenses_history)
     for category, recommended_amount in recommended_amounts.items():
         if not any(expense['category'] == category or expense[
             'category'] == category_mapping.get(category) for expense in
                    user_expenses_history):
-            under_spent.append({
+            zero_spent.append({
                 'category': category,
                 'actual_amount': 0.0,
                 'recommended_amount': recommended_amount
@@ -564,6 +560,7 @@ def get_user_expenses_comparison_at_eom(request):
     return JsonResponse({
         'over_spent': over_spent,
         'under_spent': under_spent,
+        'zero_spent': zero_spent,  # Include the zero_spent list in the response
         'total_expense': round(float(total_expense), 2),
         'recommended_amounts': recommended_amounts
     }, status=200)
