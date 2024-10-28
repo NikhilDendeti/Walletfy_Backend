@@ -47,6 +47,7 @@ def get_user_details(request):
 
 @api_view(['POST'])
 def store_user_data(request):
+    print(request.data)
     user_id = request.user.user_id
     user = get_object_or_404(User, user_id=user_id)
 
