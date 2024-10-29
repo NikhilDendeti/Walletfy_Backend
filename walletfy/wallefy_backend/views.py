@@ -737,12 +737,12 @@ from .models import User, UserProfile, UserPreferenceDetails, UserExpense
 #                         status=405)
 
 
-
 # Initialize OpenAI client with NVIDIA API base URL and API key
 client = OpenAI(
     base_url="https://integrate.api.nvidia.com/v1",
     api_key="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"
 )
+
 
 @api_view(['POST'])
 def generate_personalized_response(request):
@@ -760,7 +760,8 @@ def generate_personalized_response(request):
                 "hate", "loser", "pathetic", "gross", "scumbag", "maggot",
                 "jerkoff", "dick", "fuck", "asshole", "ass", "suck", "nigga",
                 "nig", "wannabe", "lowlife", "dirtbag", "snake", "vermin",
-                "degenerate", "cretin", "tool", "hack", "dirt", "savage", "pig",
+                "degenerate", "cretin", "tool", "hack", "dirt", "savage",
+                "pig",
                 "scoundrel", "muck", "creep", "lame", "disgusting", "ignorant",
                 "illiterate", "pervert", "repulsive", "numbskull", "bonehead",
                 "jerk", "nitwit", "sadist", "freakshow", "deadbeat", "cheater",
@@ -768,21 +769,28 @@ def generate_personalized_response(request):
                 "disgrace", "leech", "parasite", "stalker", "clueless",
                 "brainless", "grub", "losing", "sickening", "toxic"
             ]
-            if any(keyword in user_message.lower() for keyword in irrelevant_keywords):
-                return JsonResponse({"error": "Your message contains irrelevant content."},
-                                    status=400)
+            if any(keyword in user_message.lower() for keyword in
+                   irrelevant_keywords):
+                return JsonResponse(
+                    {"error": "Your message contains irrelevant content."},
+                    status=400)
 
             try:
                 user = User.objects.get(user_id=user_id)
                 profile = UserProfile.objects.get(user=user)
-                preference_details = UserPreferenceDetails.objects.get(user=user)
-                recent_expenses = UserExpense.objects.filter(user=user).order_by('-date')[:5]
+                preference_details = UserPreferenceDetails.objects.get(
+                    user=user)
+                recent_expenses = UserExpense.objects.filter(
+                    user=user).order_by('-date')[:5]
             except ObjectDoesNotExist:
-                return JsonResponse({"error": "User or profile details not found."}, status=404)
+                return JsonResponse(
+                    {"error": "User or profile details not found."},
+                    status=404)
 
             # Summarize data without specific details for contextual response
             expenses_summary = ", ".join(
-                [f"{expense.category}: {expense.expenses_amount}" for expense in recent_expenses]
+                [f"{expense.category}: {expense.expenses_amount}" for expense
+                 in recent_expenses]
             )
             personalized_context = (
                 f"This user has a general budget of around {preference_details.salary} and "
@@ -790,7 +798,7 @@ def generate_personalized_response(request):
                 f"Respond to their question, considering these financial preferences without referencing personal details."
             )
 
-            full_prompt = personalized_context + "\n\nUser's Question: " + user_message
+            full_prompt = personalized_context + "\n\nUser's Question: " + user_message + "Respond to questions in under 50 words with concise, friendly answers, adding relevant emojis for a user-friendly touch. Craft responses to resonate with an Indian audience by using approachable, positive language and cultural context."
 
             # OpenAI API call
             completion = client.chat.completions.create(
@@ -814,7 +822,8 @@ def generate_personalized_response(request):
         except Exception as e:
             # Log the exception for debugging
             print(f"An error occurred: {e}")
-            return JsonResponse({"error": "An internal server error occurred."}, status=500)
+            return JsonResponse(
+                {"error": "An internal server error occurred."}, status=500)
 
     return JsonResponse({"error": "Only POST requests are allowed."},
                         status=405)
