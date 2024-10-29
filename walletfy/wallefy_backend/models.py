@@ -30,7 +30,8 @@ class User(AbstractUser):
 # UserRole Model
 class UserRole(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    role = models.CharField(max_length=10, choices=RoleChoices.list_of_values())
+    role = models.CharField(max_length=10,
+                            choices=RoleChoices.list_of_values())
 
     def __str__(self):
         return f"{self.user} - {self.role}"
@@ -80,7 +81,8 @@ class LocationWiseCategoryDetails(models.Model):
     Rent_percentage = models.DecimalField(max_digits=10, decimal_places=2)
     Food_percentage = models.DecimalField(max_digits=10, decimal_places=2)
     Shopping_percentage = models.DecimalField(max_digits=10, decimal_places=2)
-    Travelling_percentage = models.DecimalField(max_digits=10, decimal_places=2)
+    Travelling_percentage = models.DecimalField(max_digits=10,
+                                                decimal_places=2)
     Health_percentage = models.DecimalField(max_digits=10, decimal_places=2)
     Entertainment_percentage = models.DecimalField(max_digits=10,
                                                    decimal_places=2)
@@ -113,8 +115,9 @@ from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.auth.models import User
 
+
 class Feedback(models.Model):
-    user_feedback = models.ForeignKey(User, on_delete=models.CASCADE)
+    user_feedback = models.OneToOneField(User, on_delete=models.CASCADE)
     rating_stars = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(5)]
     )
