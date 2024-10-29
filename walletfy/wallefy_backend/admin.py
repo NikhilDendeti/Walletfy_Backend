@@ -15,3 +15,4 @@ admin.site.register(Location)
 admin.site.register(LocationWiseCategoryDetails)
 
 admin.site.register(UserExpense)
+admin.site.register(Feedback)

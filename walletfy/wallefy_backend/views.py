@@ -575,6 +575,7 @@ def get_user_expenses_comparison_at_eom(request):
     }, status=200)
 
 
+@api_view(['POST'])
 def get_feedback(request):
     user_id = request.user.user_id
 
@@ -586,7 +587,7 @@ def get_feedback(request):
     description = request.data.get('feedback')
     rating = request.data.get('rating')
     Feedback.objects.create(user=user, feedback=description,
-                                     rating_stars=rating)
+                            rating_stars=rating)
 
     return JsonResponse({'message': 'Feedback submitted successfully.'},
                         status=200)
