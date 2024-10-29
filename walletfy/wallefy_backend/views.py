@@ -643,28 +643,25 @@ client = OpenAI(
 def generate_personalized_response(request):
     if request.method == "POST":
         try:
-            # Get user_id from authenticated user and message from request body
             user_id = request.user.user_id
-            data = json.loads(request.body)
-            user_message = data.get("message", "")
+            # data = json.loads(request.body)
+            user_message = request.data.get('message')
 
             if not user_message:
                 return JsonResponse({"error": "Message is required."}, status=400)
 
-            # Fetch user data for creating a personalized prompt
             try:
                 user = User.objects.get(user_id=user_id)
                 profile = UserProfile.objects.get(user=user)
                 preference_details = UserPreferenceDetails.objects.get(user=user)
                 recent_expenses = UserExpense.objects.filter(user=user).order_by('-date')[:5]
-            except User.DoesNotExist:
+            except ObjectDoesNotExist:
                 return JsonResponse({"error": "User not found."}, status=404)
-            except UserProfile.DoesNotExist:
+            except ObjectDoesNotExist:
                 return JsonResponse({"error": "User profile not found."}, status=404)
-            except UserPreferenceDetails.DoesNotExist:
+            except ObjectDoesNotExist:
                 return JsonResponse({"error": "User preference details not found."}, status=404)
 
-            # Construct a personalized prompt
             expenses_summary = "\n".join(
                 [f"{expense.category}: {expense.expenses_amount}" for expense in recent_expenses]
             )
@@ -674,10 +671,8 @@ def generate_personalized_response(request):
                 f"Their recent expenses are:\n{expenses_summary}\n\n"
             )
 
-            # Full prompt for the AI model
             full_prompt = user_data_prompt + user_message
 
-            # Call the NVIDIA model API with streaming enabled
             completion = client.chat.completions.create(
                 model="nvidia/llama-3.1-nemotron-70b-instruct",
                 messages=[{"role": "user", "content": full_prompt}],
@@ -687,7 +682,6 @@ def generate_personalized_response(request):
                 stream=True
             )
 
-            # Gather the streamed response
             generated_text = ""
             for chunk in completion:
                 if chunk.choices[0].delta.content:
