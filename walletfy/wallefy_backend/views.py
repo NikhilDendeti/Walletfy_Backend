@@ -575,6 +575,23 @@ def get_user_expenses_comparison_at_eom(request):
     }, status=200)
 
 
+# @api_view(['POST'])
+# def get_feedback(request):
+#     user_id = request.user.user_id
+#
+#     try:
+#         user = User.objects.get(user_id=user_id)
+#     except ObjectDoesNotExist:
+#         return JsonResponse({'message': 'User not found.'}, status=404)
+#
+#     description = request.data.get('description')
+#     rating = request.data.get('rating')
+#     Feedback.objects.create(user=user, feedback=description,
+#                             rating_stars=rating)
+#
+#     return JsonResponse({'message': 'Feedback submitted successfully.'},
+#                         status=200)
+
 @api_view(['POST'])
 def get_feedback(request):
     user_id = request.user.user_id
@@ -586,8 +603,19 @@ def get_feedback(request):
 
     description = request.data.get('description')
     rating = request.data.get('rating')
-    Feedback.objects.create(user=user, feedback=description,
-                            rating_stars=rating)
 
-    return JsonResponse({'message': 'Feedback submitted successfully.'},
-                        status=200)
+    # Check if description and rating are present
+    if description is None or rating is None:
+        return JsonResponse({'message': 'Description and rating are required.'}, status=400)
+
+    # Check if rating is an integer and within a valid range (e.g., 1 to 5)
+    try:
+        rating = int(rating)
+        if rating < 1 or rating > 5:
+            return JsonResponse({'message': 'Rating must be between 1 and 5.'}, status=400)
+    except ValueError:
+        return JsonResponse({'message': 'Rating must be an integer.'}, status=400)
+
+    Feedback.objects.create(user=user, feedback=description, rating_stars=rating)
+
+    return JsonResponse({'message': 'Feedback submitted successfully.'}, status=200)
