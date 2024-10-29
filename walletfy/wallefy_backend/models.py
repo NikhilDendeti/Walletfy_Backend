@@ -107,3 +107,13 @@ class UserExpense(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.category}: {self.expenses_amount}"
+
+
+class Feedback(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    rating_stars = models.IntegerField()
+    description = models.TextField()
+    date = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user} - {self.description}"

@@ -35,6 +35,7 @@ urlpatterns = [
     path('get_user_details/', get_user_details, name='get_user_details'),
     path('update_user_expense', update_user_expense,
          name='update_user_expense'),
+    path('feedback/', get_feedback),
     path('store_user_data/', store_user_data),
     path('get_last_five_transactions/', get_last_five_transactions),
     path('get_last_all_transactions/', get_last_all_transactions),
@@ -49,6 +50,5 @@ urlpatterns = [
          get_user_expenses_comparison_at_eom),
 
     path('accounts/', include('allauth.urls')),
-    # Add this line to include allauth URLs
 
 ]

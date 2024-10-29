@@ -11,7 +11,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from .models import User, UserExpense, UserPreferenceDetails, UserProfile, \
-    Location, LocationWiseCategoryDetails
+    Location, LocationWiseCategoryDetails, Feedback
 
 
 @api_view(['GET'])
@@ -451,6 +451,7 @@ def get_user_expense_suggestions(request):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+
 @api_view(['POST'])
 def get_user_expenses_comparison_at_eom(request):
     user_id = request.user.user_id
@@ -491,14 +492,22 @@ def get_user_expenses_comparison_at_eom(request):
 
     base_amount = user_preference.salary
     recommended_amounts = {
-        'Rent': round(base_amount * (location_details.Rent_percentage / 100), 2),
-        'Food': round(base_amount * (location_details.Food_percentage / 100), 2),
-        'Shopping': round(base_amount * (location_details.Shopping_percentage / 100), 2),
-        'Travelling': round(base_amount * (location_details.Travelling_percentage / 100), 2),
-        'Health': round(base_amount * (location_details.Health_percentage / 100), 2),
-        'Entertainment': round(base_amount * (location_details.Entertainment_percentage / 100), 2),
-        'Savings': round(base_amount * (location_details.Savings_percentage / 100), 2),
-        'Miscellaneous': round(base_amount * (location_details.Miscellaneous_percentage / 100), 2),
+        'Rent': round(base_amount * (location_details.Rent_percentage / 100),
+                      2),
+        'Food': round(base_amount * (location_details.Food_percentage / 100),
+                      2),
+        'Shopping': round(
+            base_amount * (location_details.Shopping_percentage / 100), 2),
+        'Travelling': round(
+            base_amount * (location_details.Travelling_percentage / 100), 2),
+        'Health': round(
+            base_amount * (location_details.Health_percentage / 100), 2),
+        'Entertainment': round(
+            base_amount * (location_details.Entertainment_percentage / 100), 2),
+        'Savings': round(
+            base_amount * (location_details.Savings_percentage / 100), 2),
+        'Miscellaneous': round(
+            base_amount * (location_details.Miscellaneous_percentage / 100), 2),
     }
 
     # Handle category naming mismatch, for example, mapping 'Travel' to 'Travelling'
@@ -564,3 +573,20 @@ def get_user_expenses_comparison_at_eom(request):
         'total_expense': round(float(total_expense), 2),
         'recommended_amounts': recommended_amounts
     }, status=200)
+
+
+def get_feedback(request):
+    user_id = request.user.user_id
+
+    try:
+        user = User.objects.get(user_id=user_id)
+    except ObjectDoesNotExist:
+        return JsonResponse({'message': 'User not found.'}, status=404)
+
+    description = request.data.get('feedback')
+    rating = request.data.get('rating')
+    Feedback.objects.create(user=user, feedback=description,
+                                     rating_stars=rating)
+
+    return JsonResponse({'message': 'Feedback submitted successfully.'},
+                        status=200)

@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     # Custom apps
     'wallefy_backend',
 ]
+
 SITE_ID = 1
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -127,7 +128,6 @@ DATABASES = {
         # Matches DATABASE_PASS
         'HOST': os.environ.get('DATABASE_HOST'),  # Matches DATABASE_HOST
         'PORT': '16751' if os.environ.get('DATABASE_USER') else None,
-        # Matches DATABASE_PORT
     },
 
 }

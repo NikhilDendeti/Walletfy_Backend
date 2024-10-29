@@ -94,3 +94,4 @@ class AreaEnum(BaseEnum):
     TOLI_CHOWKI = "TOLI CHOWKI"
     UPPAL = "UPPAL"
     VANASTHALIPURAM = "VANASTHALIPURAM"
+
