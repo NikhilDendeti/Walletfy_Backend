@@ -591,13 +591,17 @@ def get_user_expenses_comparison_at_eom(request):
 #
 #     return JsonResponse({'message': 'Feedback submitted successfully.'},
 #                         status=200)
+from django.core.exceptions import ObjectDoesNotExist
+from django.http import JsonResponse
+from rest_framework.decorators import api_view
+from .models import Feedback, User
 
 @api_view(['POST'])
 def get_feedback(request):
-    user_id = request.user.user_id
+    user_id = request.user.id
 
     try:
-        user = User.objects.get(user_id=user_id)
+        user = User.objects.get(id=user_id)
     except ObjectDoesNotExist:
         return JsonResponse({'message': 'User not found.'}, status=404)
 
@@ -616,6 +620,8 @@ def get_feedback(request):
     except ValueError:
         return JsonResponse({'message': 'Rating must be an integer.'}, status=400)
 
-    Feedback.objects.create(user=user, feedback=description, rating_stars=rating)
+    # Create Feedback instance with correct field names
+    Feedback.objects.create(user=user, description=description, rating_stars=rating)
 
     return JsonResponse({'message': 'Feedback submitted successfully.'}, status=200)
+
