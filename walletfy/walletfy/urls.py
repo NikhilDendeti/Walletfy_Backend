@@ -48,7 +48,10 @@ urlpatterns = [
     path('get_user_expense_suggestions/', get_user_expense_suggestions),
     path('get_user_expenses_comparison_at_eom/',
          get_user_expenses_comparison_at_eom),
-
     path('accounts/', include('allauth.urls')),
+
+    path('generate-personalized-response/',
+         generate_personalized_response,
+         name='generate_personalized_response'),
 
 ]

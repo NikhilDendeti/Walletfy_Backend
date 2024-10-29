@@ -628,3 +628,72 @@ def get_feedback(request):
 
     return JsonResponse({'message': 'Feedback submitted successfully.'},
                         status=200)
+
+
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+from openai import OpenAI
+from .models import User, UserProfile, UserPreferenceDetails, UserExpense
+
+client = OpenAI(
+    base_url="https://integrate.api.nvidia.com/v1",
+    api_key="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"
+)
+
+@csrf_exempt
+def generate_personalized_response(request):
+    if request.method == "POST":
+        # Parse JSON body
+        try:
+            data = json.loads(request.body)
+            user_id = request.user.user_id
+            user_message = data.get("message", "")
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON format"}, status=400)
+
+        if not user_id or not user_message:
+            return JsonResponse({"error": "User ID and message are required"}, status=400)
+
+        # Retrieve user data
+        try:
+            user = User.objects.get(user_id=user_id)
+            profile = UserProfile.objects.get(user=user)
+            preference_details = UserPreferenceDetails.objects.get(user=user)
+            recent_expenses = UserExpense.objects.filter(user=user).order_by('-date')[:5]
+        except User.DoesNotExist:
+            return JsonResponse({"error": "User not found"}, status=404)
+        except UserProfile.DoesNotExist:
+            return JsonResponse({"error": "User profile not found"}, status=404)
+        except UserPreferenceDetails.DoesNotExist:
+            return JsonResponse({"error": "User preference details not found"}, status=404)
+
+        expenses_summary = "\n".join([f"{expense.category}: {expense.expenses_amount}" for expense in recent_expenses])
+        user_data_prompt = f"User {user.full_name} has a monthly salary of {preference_details.salary}, "
+        user_data_prompt += f"prefers {preference_details.preference} items, lives in {preference_details.city}. "
+        user_data_prompt += f"Their recent expenses are:\n{expenses_summary}\n\n"
+
+        full_prompt = user_data_prompt + user_message
+
+        try:
+            completion = client.chat.completions.create(
+                model="nvidia/llama-3.1-nemotron-70b-instruct",
+                messages=[{"role": "user", "content": full_prompt}],
+                temperature=0.5,
+                top_p=1,
+                max_tokens=1024,
+                stream=True
+            )
+
+            generated_text = ""
+            for chunk in completion:
+                if chunk.choices[0].delta.content:
+                    generated_text += chunk.choices[0].delta.content
+
+            return JsonResponse({"response": generated_text})
+
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+    return JsonResponse({"error": "Only POST requests are allowed"}, status=405)
