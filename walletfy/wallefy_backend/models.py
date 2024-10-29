@@ -117,7 +117,7 @@ from django.contrib.auth.models import User
 
 
 class Feedback(models.Model):
-    user_feedback = models.OneToOneField(User, on_delete=models.CASCADE)
+    user_feedback = models.ForeignKey(User, on_delete=models.CASCADE)
     rating_stars = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(5)]
     )

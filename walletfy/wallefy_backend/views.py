@@ -604,7 +604,7 @@ def get_feedback(request):
     user_id = request.user.user_id
 
     try:
-        user = User.objects.get(id=user_id)
+        user = User.objects.get(user_id=user_id)
     except ObjectDoesNotExist:
         return JsonResponse({'message': 'User not found.'}, status=404)
 
@@ -623,7 +623,7 @@ def get_feedback(request):
                             status=400)
 
     # Create Feedback instance
-    Feedback.objects.create(user=user, description=description,
+    Feedback.objects.create(user_feedback=user, description=description,
                             rating_stars=rating)
 
     return JsonResponse({'message': 'Feedback submitted successfully.'},
