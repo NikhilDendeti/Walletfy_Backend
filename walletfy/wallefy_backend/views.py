@@ -653,7 +653,7 @@ def generate_personalized_response(request):
                                     status=400)
             more_irrelevant_keywords = [
                 "hate", "loser", "pathetic", "gross", "scumbag", "maggot",
-                "jerkoff", "dick", "fucker", "asshole", "ass", "suck", "nigga",
+                "jerkoff", "dick", "fuck", "asshole", "ass", "suck", "nigga",
                 "nig",
                 "wannabe", "lowlife", "dirtbag", "snake", "vermin",
                 "degenerate", "cretin",
