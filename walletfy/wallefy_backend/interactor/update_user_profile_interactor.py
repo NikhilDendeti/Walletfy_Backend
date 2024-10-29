@@ -9,10 +9,11 @@ class UserProfileUpdate:
         self.storage = storage
         self.response = response
 
-    def update_user_profile_interactor(self, full_name, email, user_id):
+    def update_user_profile_interactor(self, full_name, email, username,
+                                       user_id):
         try:
             self.storage.validate_user_id(user_id)
         except InvalidUserException:
             return self.response.invalid_user_exception()
-        self.storage.update_user_profile(full_name, email, user_id)
+        self.storage.update_user_profile(full_name, email, username, user_id)
         return self.response.update_user_profile_success_response()

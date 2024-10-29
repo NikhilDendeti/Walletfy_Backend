@@ -82,8 +82,8 @@ class UserDB:
             raise InvalidUserException()
 
     @staticmethod
-    def update_user_profile(full_name, email, user_id) -> int:
+    def update_user_profile(full_name, email, username, user_id) -> int:
         user_profile_update = User.objects.filter(user_id=user_id).update(
-            full_name=full_name, email=email)
+            full_name=full_name, email=email, username=username)
         # it returns the number of rows that updated
         return user_profile_update
