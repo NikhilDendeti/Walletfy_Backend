@@ -627,61 +627,57 @@ def get_feedback(request):
     return JsonResponse({'message': 'Feedback submitted successfully.'},
                         status=200)
 
-
 from django.http import JsonResponse
+from rest_framework.decorators import api_view
 import json
 from openai import OpenAI
 from .models import User, UserProfile, UserPreferenceDetails, UserExpense
 
+# Initialize OpenAI client with NVIDIA API base URL and API key
 client = OpenAI(
     base_url="https://integrate.api.nvidia.com/v1",
     api_key="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"
 )
 
-
 @api_view(['POST'])
 def generate_personalized_response(request):
     if request.method == "POST":
         try:
-            # Parse JSON body
+            # Get user_id from authenticated user and message from request body
             user_id = request.user.user_id
             data = json.loads(request.body)
             user_message = data.get("message", "")
 
-            if not user_id or not user_message:
-                return JsonResponse(
-                    {"error": "User ID and message are required."}, status=400)
+            if not user_message:
+                return JsonResponse({"error": "Message is required."}, status=400)
 
+            # Fetch user data for creating a personalized prompt
             try:
                 user = User.objects.get(user_id=user_id)
                 profile = UserProfile.objects.get(user=user)
-                preference_details = UserPreferenceDetails.objects.get(
-                    user=user)
-                recent_expenses = UserExpense.objects.filter(
-                    user=user).order_by('-date')[:5]
+                preference_details = UserPreferenceDetails.objects.get(user=user)
+                recent_expenses = UserExpense.objects.filter(user=user).order_by('-date')[:5]
             except User.DoesNotExist:
                 return JsonResponse({"error": "User not found."}, status=404)
             except UserProfile.DoesNotExist:
-                return JsonResponse({"error": "User profile not found."},
-                                    status=404)
+                return JsonResponse({"error": "User profile not found."}, status=404)
             except UserPreferenceDetails.DoesNotExist:
-                return JsonResponse(
-                    {"error": "User preference details not found."},
-                    status=404)
+                return JsonResponse({"error": "User preference details not found."}, status=404)
 
-            # Prepare personalized prompt
+            # Construct a personalized prompt
             expenses_summary = "\n".join(
-                [f"{expense.category}: {expense.expenses_amount}" for expense
-                 in recent_expenses])
+                [f"{expense.category}: {expense.expenses_amount}" for expense in recent_expenses]
+            )
             user_data_prompt = (
-                f"User {user.full_name} has a monthly salary of {preference_details.salary}, "
+                f"User {user.full_name} ({profile.gender}) has a monthly salary of {preference_details.salary}, "
                 f"prefers {preference_details.preference} items, lives in {preference_details.city}. "
                 f"Their recent expenses are:\n{expenses_summary}\n\n"
             )
 
+            # Full prompt for the AI model
             full_prompt = user_data_prompt + user_message
 
-            # Call the NVIDIA model API
+            # Call the NVIDIA model API with streaming enabled
             completion = client.chat.completions.create(
                 model="nvidia/llama-3.1-nemotron-70b-instruct",
                 messages=[{"role": "user", "content": full_prompt}],
@@ -691,7 +687,7 @@ def generate_personalized_response(request):
                 stream=True
             )
 
-            # Gather streamed response
+            # Gather the streamed response
             generated_text = ""
             for chunk in completion:
                 if chunk.choices[0].delta.content:
@@ -702,10 +698,9 @@ def generate_personalized_response(request):
         except json.JSONDecodeError:
             return JsonResponse({"error": "Invalid JSON format."}, status=400)
         except Exception as e:
-            # Log the exception for further debugging if needed
+            # Log the exception for debugging
             print(f"An error occurred: {e}")
-            return JsonResponse(
-                {"error": "An internal server error occurred."}, status=500)
+            return JsonResponse({"error": "An internal server error occurred."}, status=500)
 
-    return JsonResponse({"error": "Only POST requests are allowed."},
-                        status=405)
+    return JsonResponse({"error": "Only POST requests are allowed."}, status=405)
+
