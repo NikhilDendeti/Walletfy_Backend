@@ -109,9 +109,15 @@ class UserExpense(models.Model):
         return f"{self.user} - {self.category}: {self.expenses_amount}"
 
 
+from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
+from django.contrib.auth.models import User
+
 class Feedback(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    rating_stars = models.IntegerField()
+    rating_stars = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
     description = models.TextField()
     date = models.DateTimeField(auto_now=True)
 

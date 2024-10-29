@@ -1,17 +1,14 @@
 from decimal import Decimal, InvalidOperation
-from unicodedata import decimal
 
-from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Sum
-from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from .models import User, UserExpense, UserPreferenceDetails, UserProfile, \
-    Location, LocationWiseCategoryDetails, Feedback
+from .models import UserExpense, UserPreferenceDetails, UserProfile, \
+    Location, LocationWiseCategoryDetails
 
 
 @api_view(['GET'])
@@ -503,11 +500,13 @@ def get_user_expenses_comparison_at_eom(request):
         'Health': round(
             base_amount * (location_details.Health_percentage / 100), 2),
         'Entertainment': round(
-            base_amount * (location_details.Entertainment_percentage / 100), 2),
+            base_amount * (location_details.Entertainment_percentage / 100),
+            2),
         'Savings': round(
             base_amount * (location_details.Savings_percentage / 100), 2),
         'Miscellaneous': round(
-            base_amount * (location_details.Miscellaneous_percentage / 100), 2),
+            base_amount * (location_details.Miscellaneous_percentage / 100),
+            2),
     }
 
     # Handle category naming mismatch, for example, mapping 'Travel' to 'Travelling'
@@ -569,7 +568,8 @@ def get_user_expenses_comparison_at_eom(request):
     return JsonResponse({
         'over_spent': over_spent,
         'under_spent': under_spent,
-        'zero_spent': zero_spent,  # Include the zero_spent list in the response
+        'zero_spent': zero_spent,
+        # Include the zero_spent list in the response
         'total_expense': round(float(total_expense), 2),
         'recommended_amounts': recommended_amounts
     }, status=200)
@@ -591,10 +591,13 @@ def get_user_expenses_comparison_at_eom(request):
 #
 #     return JsonResponse({'message': 'Feedback submitted successfully.'},
 #                         status=200)
+
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
 from .models import Feedback, User
+
 
 @api_view(['POST'])
 def get_feedback(request):
@@ -610,18 +613,18 @@ def get_feedback(request):
 
     # Check if description and rating are present
     if description is None or rating is None:
-        return JsonResponse({'message': 'Description and rating are required.'}, status=400)
+        return JsonResponse(
+            {'message': 'Description and rating are required.'}, status=400)
 
-    # Check if rating is an integer and within a valid range (e.g., 1 to 5)
     try:
         rating = int(rating)
-        if rating < 1 or rating > 5:
-            return JsonResponse({'message': 'Rating must be between 1 and 5.'}, status=400)
     except ValueError:
-        return JsonResponse({'message': 'Rating must be an integer.'}, status=400)
+        return JsonResponse({'message': 'Rating must be an integer.'},
+                            status=400)
 
-    # Create Feedback instance with correct field names
-    Feedback.objects.create(user=user, description=description, rating_stars=rating)
+    # Create Feedback instance
+    Feedback.objects.create(user=user, description=description,
+                            rating_stars=rating)
 
-    return JsonResponse({'message': 'Feedback submitted successfully.'}, status=200)
-
+    return JsonResponse({'message': 'Feedback submitted successfully.'},
+                        status=200)
