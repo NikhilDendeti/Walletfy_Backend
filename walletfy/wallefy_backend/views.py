@@ -601,7 +601,7 @@ from .models import Feedback, User
 
 @api_view(['POST'])
 def get_feedback(request):
-    user_id = request.user.id
+    user_id = request.user.user_id
 
     try:
         user = User.objects.get(id=user_id)
