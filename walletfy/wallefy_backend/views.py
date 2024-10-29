@@ -642,7 +642,7 @@ client = OpenAI(
 )
 
 
-@csrf_exempt
+@api_view(['POST'])
 def generate_personalized_response(request):
     if request.method == "POST":
         try:
