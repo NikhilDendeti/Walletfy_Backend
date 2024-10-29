@@ -114,7 +114,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.auth.models import User
 
 class Feedback(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user_feedback = models.ForeignKey(User, on_delete=models.CASCADE)
     rating_stars = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(5)]
     )
@@ -122,4 +122,4 @@ class Feedback(models.Model):
     date = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.user} - {self.description}"
+        return f"{self.user_feedback} - {self.description}"

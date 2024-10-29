@@ -12,7 +12,8 @@ from wallefy_backend.interactor.update_password_interactor import \
     UpdatePasswordInteractor
 from wallefy_backend.interactor.update_user_profile_interactor import \
     UserProfileUpdate
-from wallefy_backend.interactor.user_profile_interactor import ProfileInteractor
+from wallefy_backend.interactor.user_profile_interactor import \
+    ProfileInteractor
 from wallefy_backend.presenters.create_access_token_using_refresh_response import \
     CreateRefreshAccessTokensResponse
 from wallefy_backend.presenters.login_response import LoginResponse
@@ -36,8 +37,9 @@ def get_login_interactor_view(request):
     password = request.data.get("password")
     response = LoginInteractor(storage=UserDB(),
                                authentication=UserAuthentication(),
-                               response=LoginResponse()).login_interactor(email,
-                                                                          password)
+                               response=LoginResponse()).login_interactor(
+        email,
+        password)
     return response
 
 
@@ -83,10 +85,11 @@ def get_user_profile_api_view(request):
 def update_user_profile_view(request):
     full_name = request.data.get("full_name")
     email = request.data.get("email")
+    username = request.data.get("username")
     user_id = request.user.user_id
     response = UserProfileUpdate(storage=UserDB(),
                                  response=UserProfileUpdateResponse()).update_user_profile_interactor(
-        full_name=full_name, email=email, user_id=user_id)
+        full_name=full_name, email=email, username=username, user_id=user_id)
     return response
 
 
