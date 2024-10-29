@@ -627,6 +627,7 @@ def get_feedback(request):
     return JsonResponse({'message': 'Feedback submitted successfully.'},
                         status=200)
 
+
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
 import json
@@ -639,6 +640,7 @@ client = OpenAI(
     api_key="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"
 )
 
+
 @api_view(['POST'])
 def generate_personalized_response(request):
     if request.method == "POST":
@@ -647,22 +649,53 @@ def generate_personalized_response(request):
             user_message = request.data.get('message')
 
             if not user_message:
-                return JsonResponse({"error": "Message is required."}, status=400)
+                return JsonResponse({"error": "Message is required."},
+                                    status=400)
+            more_irrelevant_keywords = [
+                "hate", "loser", "pathetic", "gross", "scumbag", "maggot",
+                "jerkoff", "dick", "fucker", "asshole", "ass", "suck", "nigga",
+                "nig",
+                "wannabe", "lowlife", "dirtbag", "snake", "vermin",
+                "degenerate", "cretin",
+                "tool", "hack", "dirt", "savage", "pig", "scoundrel", "muck",
+                "creep",
+                "lame", "disgusting", "ignorant", "illiterate", "pervert",
+                "repulsive",
+                "numbskull", "bonehead", "jerk", "nitwit", "sadist",
+                "freakshow",
+                "deadbeat", "cheater", "sicko", "narcissist", "hypocrite",
+                "bully",
+                "backstabber", "disgrace", "leech", "parasite", "stalker",
+                "clueless",
+                "brainless", "grub", "losing", "sickening", "toxic"
+            ]
+
+            for keyword in more_irrelevant_keywords:
+                if keyword in user_message.lower():
+                    return JsonResponse({"error": "Your message contains "
+                                                  "irrelevant content."},
+                                        status=400)
 
             try:
                 user = User.objects.get(user_id=user_id)
                 profile = UserProfile.objects.get(user=user)
-                preference_details = UserPreferenceDetails.objects.get(user=user)
-                recent_expenses = UserExpense.objects.filter(user=user).order_by('-date')[:5]
+                preference_details = UserPreferenceDetails.objects.get(
+                    user=user)
+                recent_expenses = UserExpense.objects.filter(
+                    user=user).order_by('-date')[:5]
             except ObjectDoesNotExist:
                 return JsonResponse({"error": "User not found."}, status=404)
             except ObjectDoesNotExist:
-                return JsonResponse({"error": "User profile not found."}, status=404)
+                return JsonResponse({"error": "User profile not found."},
+                                    status=404)
             except ObjectDoesNotExist:
-                return JsonResponse({"error": "User preference details not found."}, status=404)
+                return JsonResponse(
+                    {"error": "User preference details not found."},
+                    status=404)
 
             expenses_summary = "\n".join(
-                [f"{expense.category}: {expense.expenses_amount}" for expense in recent_expenses]
+                [f"{expense.category}: {expense.expenses_amount}" for expense
+                 in recent_expenses]
             )
             user_data_prompt = (
                 f"User {user.full_name} ({profile.gender}) has a monthly salary of {preference_details.salary}, "
@@ -670,7 +703,7 @@ def generate_personalized_response(request):
                 f"Their recent expenses are:\n{expenses_summary}\n\n"
             )
 
-            full_prompt = user_data_prompt + user_message
+            full_prompt = user_data_prompt + user_message + "give me the response in 50 words"
 
             completion = client.chat.completions.create(
                 model="nvidia/llama-3.1-nemotron-70b-instruct",
@@ -685,6 +718,10 @@ def generate_personalized_response(request):
             for chunk in completion:
                 if chunk.choices[0].delta.content:
                     generated_text += chunk.choices[0].delta.content
+            # if "*" or "/n" or "+" in generated_text:
+            #     generated_text = generated_text.replace("*", "")
+            #     generated_text = generated_text.replace("/n", "")
+            #     generated_text = generated_text.replace("+", "")
 
             return JsonResponse({"response": generated_text})
 
@@ -693,7 +730,8 @@ def generate_personalized_response(request):
         except Exception as e:
             # Log the exception for debugging
             print(f"An error occurred: {e}")
-            return JsonResponse({"error": "An internal server error occurred."}, status=500)
+            return JsonResponse(
+                {"error": "An internal server error occurred."}, status=500)
 
-    return JsonResponse({"error": "Only POST requests are allowed."}, status=405)
-
+    return JsonResponse({"error": "Only POST requests are allowed."},
+                        status=405)
