@@ -632,7 +632,6 @@ def get_feedback(request):
 
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.decorators import login_required
 import json
 from openai import OpenAI
 from .models import User, UserProfile, UserPreferenceDetails, UserExpense
@@ -644,26 +643,37 @@ client = OpenAI(
 
 
 @csrf_exempt
-@login_required  # Ensures that only logged-in users can access this view
 def generate_personalized_response(request):
     if request.method == "POST":
         try:
             # Parse JSON body
             data = json.loads(request.body)
-            user_id = request.user.user_id
+            user_id = data.get("user_id")
             user_message = data.get("message", "")
 
-            if not user_message:
-                return JsonResponse({"error": "Message is required."},
-                                    status=400)
+            if not user_id or not user_message:
+                return JsonResponse(
+                    {"error": "User ID and message are required."}, status=400)
 
-            # Retrieve user data
-            user = User.objects.get(user_id=user_id)
-            profile = UserProfile.objects.get(user=user)
-            preference_details = UserPreferenceDetails.objects.get(user=user)
-            recent_expenses = UserExpense.objects.filter(user=user).order_by(
-                '-date')[:5]
+            # Retrieve user data without authentication
+            try:
+                user = User.objects.get(user_id=user_id)
+                profile = UserProfile.objects.get(user=user)
+                preference_details = UserPreferenceDetails.objects.get(
+                    user=user)
+                recent_expenses = UserExpense.objects.filter(
+                    user=user).order_by('-date')[:5]
+            except User.DoesNotExist:
+                return JsonResponse({"error": "User not found."}, status=404)
+            except UserProfile.DoesNotExist:
+                return JsonResponse({"error": "User profile not found."},
+                                    status=404)
+            except UserPreferenceDetails.DoesNotExist:
+                return JsonResponse(
+                    {"error": "User preference details not found."},
+                    status=404)
 
+            # Prepare personalized prompt
             expenses_summary = "\n".join(
                 [f"{expense.category}: {expense.expenses_amount}" for expense
                  in recent_expenses])
@@ -685,6 +695,7 @@ def generate_personalized_response(request):
                 stream=True
             )
 
+            # Gather streamed response
             generated_text = ""
             for chunk in completion:
                 if chunk.choices[0].delta.content:
@@ -694,16 +705,8 @@ def generate_personalized_response(request):
 
         except json.JSONDecodeError:
             return JsonResponse({"error": "Invalid JSON format."}, status=400)
-        except User.DoesNotExist:
-            return JsonResponse({"error": "User not found."}, status=404)
-        except UserProfile.DoesNotExist:
-            return JsonResponse({"error": "User profile not found."},
-                                status=404)
-        except UserPreferenceDetails.DoesNotExist:
-            return JsonResponse(
-                {"error": "User preference details not found."}, status=404)
         except Exception as e:
-            # Log the exception for further debugging
+            # Log the exception for further debugging if needed
             print(f"An error occurred: {e}")
             return JsonResponse(
                 {"error": "An internal server error occurred."}, status=500)
