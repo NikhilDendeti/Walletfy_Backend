@@ -648,14 +648,13 @@ def generate_personalized_response(request):
         try:
             # Parse JSON body
             data = json.loads(request.body)
-            user_id = data.get("user_id")
+            user_id = request.user.user_id
             user_message = data.get("message", "")
 
             if not user_id or not user_message:
                 return JsonResponse(
                     {"error": "User ID and message are required."}, status=400)
 
-            # Retrieve user data without authentication
             try:
                 user = User.objects.get(user_id=user_id)
                 profile = UserProfile.objects.get(user=user)
