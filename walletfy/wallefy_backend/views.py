@@ -630,9 +630,9 @@ def get_feedback(request):
                         status=200)
 
 
-
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
 import json
 from openai import OpenAI
 from .models import User, UserProfile, UserPreferenceDetails, UserExpense
@@ -642,41 +642,40 @@ client = OpenAI(
     api_key="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"
 )
 
+
 @csrf_exempt
+@login_required  # Ensures that only logged-in users can access this view
 def generate_personalized_response(request):
     if request.method == "POST":
-        # Parse JSON body
         try:
+            # Parse JSON body
             data = json.loads(request.body)
             user_id = request.user.user_id
             user_message = data.get("message", "")
-        except json.JSONDecodeError:
-            return JsonResponse({"error": "Invalid JSON format"}, status=400)
 
-        if not user_id or not user_message:
-            return JsonResponse({"error": "User ID and message are required"}, status=400)
+            if not user_message:
+                return JsonResponse({"error": "Message is required."},
+                                    status=400)
 
-        # Retrieve user data
-        try:
+            # Retrieve user data
             user = User.objects.get(user_id=user_id)
             profile = UserProfile.objects.get(user=user)
             preference_details = UserPreferenceDetails.objects.get(user=user)
-            recent_expenses = UserExpense.objects.filter(user=user).order_by('-date')[:5]
-        except User.DoesNotExist:
-            return JsonResponse({"error": "User not found"}, status=404)
-        except UserProfile.DoesNotExist:
-            return JsonResponse({"error": "User profile not found"}, status=404)
-        except UserPreferenceDetails.DoesNotExist:
-            return JsonResponse({"error": "User preference details not found"}, status=404)
+            recent_expenses = UserExpense.objects.filter(user=user).order_by(
+                '-date')[:5]
 
-        expenses_summary = "\n".join([f"{expense.category}: {expense.expenses_amount}" for expense in recent_expenses])
-        user_data_prompt = f"User {user.full_name} has a monthly salary of {preference_details.salary}, "
-        user_data_prompt += f"prefers {preference_details.preference} items, lives in {preference_details.city}. "
-        user_data_prompt += f"Their recent expenses are:\n{expenses_summary}\n\n"
+            expenses_summary = "\n".join(
+                [f"{expense.category}: {expense.expenses_amount}" for expense
+                 in recent_expenses])
+            user_data_prompt = (
+                f"User {user.full_name} has a monthly salary of {preference_details.salary}, "
+                f"prefers {preference_details.preference} items, lives in {preference_details.city}. "
+                f"Their recent expenses are:\n{expenses_summary}\n\n"
+            )
 
-        full_prompt = user_data_prompt + user_message
+            full_prompt = user_data_prompt + user_message
 
-        try:
+            # Call the NVIDIA model API
             completion = client.chat.completions.create(
                 model="nvidia/llama-3.1-nemotron-70b-instruct",
                 messages=[{"role": "user", "content": full_prompt}],
@@ -693,7 +692,21 @@ def generate_personalized_response(request):
 
             return JsonResponse({"response": generated_text})
 
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON format."}, status=400)
+        except User.DoesNotExist:
+            return JsonResponse({"error": "User not found."}, status=404)
+        except UserProfile.DoesNotExist:
+            return JsonResponse({"error": "User profile not found."},
+                                status=404)
+        except UserPreferenceDetails.DoesNotExist:
+            return JsonResponse(
+                {"error": "User preference details not found."}, status=404)
         except Exception as e:
-            return JsonResponse({"error": str(e)}, status=500)
+            # Log the exception for further debugging
+            print(f"An error occurred: {e}")
+            return JsonResponse(
+                {"error": "An internal server error occurred."}, status=500)
 
-    return JsonResponse({"error": "Only POST requests are allowed"}, status=405)
+    return JsonResponse({"error": "Only POST requests are allowed."},
+                        status=405)
