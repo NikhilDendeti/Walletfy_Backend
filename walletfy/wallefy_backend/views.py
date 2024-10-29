@@ -584,7 +584,7 @@ def get_feedback(request):
     except ObjectDoesNotExist:
         return JsonResponse({'message': 'User not found.'}, status=404)
 
-    description = request.data.get('feedback')
+    description = request.data.get('description')
     rating = request.data.get('rating')
     Feedback.objects.create(user=user, feedback=description,
                             rating_stars=rating)
