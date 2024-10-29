@@ -644,7 +644,6 @@ def generate_personalized_response(request):
     if request.method == "POST":
         try:
             user_id = request.user.user_id
-            # data = json.loads(request.body)
             user_message = request.data.get('message')
 
             if not user_message:

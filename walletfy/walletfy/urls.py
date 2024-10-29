@@ -50,7 +50,7 @@ urlpatterns = [
          get_user_expenses_comparison_at_eom),
     path('accounts/', include('allauth.urls')),
 
-    path('generate-personalized-response/',
+    path('generate_personalized_response/',
          generate_personalized_response,
          name='generate_personalized_response'),
 
