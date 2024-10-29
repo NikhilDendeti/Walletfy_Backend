@@ -7,8 +7,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from .models import UserExpense, UserPreferenceDetails, UserProfile, \
-    Location, LocationWiseCategoryDetails
+from .models import Location, LocationWiseCategoryDetails
 
 
 @api_view(['GET'])
@@ -594,9 +593,8 @@ def get_user_expenses_comparison_at_eom(request):
 
 
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import JsonResponse
 from rest_framework.decorators import api_view
-from .models import Feedback, User
+from .models import Feedback
 
 
 @api_view(['POST'])
@@ -631,7 +629,6 @@ def get_feedback(request):
 
 
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 import json
 from openai import OpenAI
 from .models import User, UserProfile, UserPreferenceDetails, UserExpense
@@ -647,8 +644,8 @@ def generate_personalized_response(request):
     if request.method == "POST":
         try:
             # Parse JSON body
-            data = json.loads(request.body)
             user_id = request.user.user_id
+            data = json.loads(request.body)
             user_message = data.get("message", "")
 
             if not user_id or not user_message:
