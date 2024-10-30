@@ -738,10 +738,110 @@ from .models import User, UserProfile, UserPreferenceDetails, UserExpense
 
 
 # Initialize OpenAI client with NVIDIA API base URL and API key
-# client = OpenAI(
-#     base_url="https://integrate.api.nvidia.com/v1",
-#     api_key="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"
-# )
+client = OpenAI(
+    base_url="https://integrate.api.nvidia.com/v1",
+    api_key="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"
+)
+
+
+@api_view(['POST'])
+def generate_personalized_response(request):
+    if request.method == "POST":
+        try:
+            user_id = request.user.user_id
+            user_message = request.data.get('message')
+
+            if not user_message:
+                return JsonResponse({"error": "Message is required."},
+                                    status=400)
+
+            # Filter out inappropriate keywords
+            irrelevant_keywords = [
+                "hate", "loser", "pathetic", "gross", "scumbag", "maggot",
+                "jerkoff", "dick", "fuck", "asshole", "ass", "suck", "nigga",
+                "nig", "wannabe", "lowlife", "dirtbag", "snake", "vermin",
+                "degenerate", "cretin", "tool", "hack", "dirt", "savage",
+                "pig",
+                "scoundrel", "muck", "creep", "lame", "disgusting", "ignorant",
+                "illiterate", "pervert", "repulsive", "numbskull", "bonehead",
+                "jerk", "nitwit", "sadist", "freakshow", "deadbeat", "cheater",
+                "sicko", "narcissist", "hypocrite", "bully", "backstabber",
+                "disgrace", "leech", "parasite", "stalker", "clueless",
+                "brainless", "grub", "losing", "sickening", "toxic"
+            ]
+            if any(keyword in user_message.lower() for keyword in
+                   irrelevant_keywords):
+                return JsonResponse(
+                    {"error": "Your message contains irrelevant content."},
+                    status=400)
+
+            try:
+                user = User.objects.get(user_id=user_id)
+                profile = UserProfile.objects.get(user=user)
+                preference_details = UserPreferenceDetails.objects.get(
+                    user=user)
+                recent_expenses = UserExpense.objects.filter(
+                    user=user).order_by('-date')[:5]
+            except ObjectDoesNotExist:
+                return JsonResponse(
+                    {"error": "User or profile details not found."},
+                    status=404)
+
+            # Summarize data without specific details for contextual response
+            expenses_summary = ", ".join(
+                [f"{expense.category}: {expense.expenses_amount}" for expense
+                 in recent_expenses]
+            )
+            personalized_context = (
+                f"This user has a general budget of around {preference_details.salary} and "
+                f"recent spending patterns such as {expenses_summary}. "
+                f"Respond to their question, considering these financial preferences without referencing personal details."
+            )
+            #
+            full_prompt = (
+                        "Your name is Riya, a friendly Financial Advisor, here to provide financial guidance. Here is the user's context: "
+                        + personalized_context +
+                        "\n\nUser's Question: " + user_message +
+                        "\n\nRespond concisely (under 50 words) with friendly, positive language, adding relevant emojis for a user-friendly touch. Ensure the answer resonates with an Indian audience by using culturally relatable terms. If the question is unrelated to finance, respond with: 'This is not a relevant question to ask here.'"
+                        )
+            #             # OpenAI API call
+            completion = client.chat.completions.create(
+                model="nvidia/llama-3.1-nemotron-70b-instruct",
+                messages=[{"role": "user", "content": full_prompt}],
+                temperature=0.5,
+                top_p=1,
+                max_tokens=1024,
+                stream=True
+            )
+
+            generated_text = ""
+            for chunk in completion:
+                if chunk.choices[0].delta.content:
+                    generated_text += chunk.choices[0].delta.content
+
+            return JsonResponse({"response": generated_text.strip()})
+
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON format."}, status=400)
+        except Exception as e:
+            # Log the exception for debugging
+            print(f"An error occurred: {e}")
+            return JsonResponse(
+                {"error": "An internal server error occurred."}, status=500)
+
+    return JsonResponse({"error": "Only POST requests are allowed."},
+                        status=405)
+
+# import google.generativeai as genai
+# from django.http import JsonResponse
+# from django.core.exceptions import ObjectDoesNotExist
+# from rest_framework.decorators import api_view
+#
+# # Directly set the API key here
+# API_KEY = "AIzaSyAyHB9uJOpdQhFc2HYI4dFLLdRix8km16M"
+#
+# # Configure the API key
+# genai.configure(api_key=API_KEY)
 #
 #
 # @api_view(['POST'])
@@ -761,13 +861,14 @@ from .models import User, UserProfile, UserPreferenceDetails, UserExpense
 #                 "jerkoff", "dick", "fuck", "asshole", "ass", "suck", "nigga",
 #                 "nig", "wannabe", "lowlife", "dirtbag", "snake", "vermin",
 #                 "degenerate", "cretin", "tool", "hack", "dirt", "savage",
-#                 "pig",
-#                 "scoundrel", "muck", "creep", "lame", "disgusting", "ignorant",
-#                 "illiterate", "pervert", "repulsive", "numbskull", "bonehead",
-#                 "jerk", "nitwit", "sadist", "freakshow", "deadbeat", "cheater",
-#                 "sicko", "narcissist", "hypocrite", "bully", "backstabber",
-#                 "disgrace", "leech", "parasite", "stalker", "clueless",
-#                 "brainless", "grub", "losing", "sickening", "toxic"
+#                 "pig", "scoundrel", "muck", "creep", "lame", "disgusting",
+#                 "ignorant", "illiterate", "pervert", "repulsive", "numbskull",
+#                 "bonehead", "jerk", "nitwit", "sadist", "freakshow",
+#                 "deadbeat", "lanja", "bitch", "puka", "boob", "boobies",
+#                 "boobs",
+#                 "cheater", "sicko", "narcissist", "hypocrite", "bully",
+#                 "backstabber", "disgrace", "leech", "parasite", "stalker",
+#                 "clueless", "brainless", "grub", "losing", "sickening", "toxic"
 #             ]
 #             if any(keyword in user_message.lower() for keyword in
 #                    irrelevant_keywords):
@@ -798,24 +899,22 @@ from .models import User, UserProfile, UserPreferenceDetails, UserExpense
 #                 f"Respond to their question, considering these financial preferences without referencing personal details."
 #             )
 #
-#             full_prompt = personalized_context + "\n\nUser's Question: " + user_message + "Respond to questions in under 50 words with concise, friendly answers, adding relevant emojis for a user-friendly touch. Craft responses to resonate with an Indian audience by using approachable, positive language and cultural context."
-#
-#             # OpenAI API call
-#             completion = client.chat.completions.create(
-#                 model="nvidia/llama-3.1-nemotron-70b-instruct",
-#                 messages=[{"role": "user", "content": full_prompt}],
-#                 temperature=0.5,
-#                 top_p=1,
-#                 max_tokens=1024,
-#                 stream=True
+#             # full_prompt = (
+#             #         "Your name is Riya and you are a Financial Advisor. Here is my personalized context: " + personalized_context + " Now tell me \n\nUser's Question: " + user_message +
+#             #         " Respond to questions with appropriate words, friendly answers, adding relevant emojis for a user-friendly touch. Craft responses to resonate with an Indian audience by using approachable, positive language and cultural context."
+#             # )
+#             full_prompt = (
+#                     "Your name is Riya, a friendly Financial Advisor, here to provide financial guidance. Here is the user's context: "
+#                     + personalized_context +
+#                     "\n\nUser's Question: " + user_message +
+#                     "\n\nRespond concisely (under 50 words) with friendly, positive language, adding relevant emojis for a user-friendly touch. Ensure the answer resonates with an Indian audience by using culturally relatable terms. If the question is unrelated to finance, respond with: 'This is not a relevant question to ask here.'"
 #             )
 #
-#             generated_text = ""
-#             for chunk in completion:
-#                 if chunk.choices[0].delta.content:
-#                     generated_text += chunk.choices[0].delta.content
+#             # Google Gemini API call
+#             model = genai.GenerativeModel("gemini-1.5-flash")
+#             response = model.generate_content(full_prompt)
 #
-#             return JsonResponse({"response": generated_text.strip()})
+#             return JsonResponse({"response": response.text.strip()})
 #
 #         except json.JSONDecodeError:
 #             return JsonResponse({"error": "Invalid JSON format."}, status=400)
@@ -827,99 +926,3 @@ from .models import User, UserProfile, UserPreferenceDetails, UserExpense
 #
 #     return JsonResponse({"error": "Only POST requests are allowed."},
 #                         status=405)
-
-
-import google.generativeai as genai
-from django.http import JsonResponse
-from django.core.exceptions import ObjectDoesNotExist
-from rest_framework.decorators import api_view
-
-# Directly set the API key here
-API_KEY = "AIzaSyAyHB9uJOpdQhFc2HYI4dFLLdRix8km16M"
-
-# Configure the API key
-genai.configure(api_key=API_KEY)
-
-
-@api_view(['POST'])
-def generate_personalized_response(request):
-    if request.method == "POST":
-        try:
-            user_id = request.user.user_id
-            user_message = request.data.get('message')
-
-            if not user_message:
-                return JsonResponse({"error": "Message is required."},
-                                    status=400)
-
-            # Filter out inappropriate keywords
-            irrelevant_keywords = [
-                "hate", "loser", "pathetic", "gross", "scumbag", "maggot",
-                "jerkoff", "dick", "fuck", "asshole", "ass", "suck", "nigga",
-                "nig", "wannabe", "lowlife", "dirtbag", "snake", "vermin",
-                "degenerate", "cretin", "tool", "hack", "dirt", "savage",
-                "pig", "scoundrel", "muck", "creep", "lame", "disgusting",
-                "ignorant", "illiterate", "pervert", "repulsive", "numbskull",
-                "bonehead", "jerk", "nitwit", "sadist", "freakshow",
-                "deadbeat", "lanja", "bitch", "puka", "boob", "boobies",
-                "boobs",
-                "cheater", "sicko", "narcissist", "hypocrite", "bully",
-                "backstabber", "disgrace", "leech", "parasite", "stalker",
-                "clueless", "brainless", "grub", "losing", "sickening", "toxic"
-            ]
-            if any(keyword in user_message.lower() for keyword in
-                   irrelevant_keywords):
-                return JsonResponse(
-                    {"error": "Your message contains irrelevant content."},
-                    status=400)
-
-            try:
-                user = User.objects.get(user_id=user_id)
-                profile = UserProfile.objects.get(user=user)
-                preference_details = UserPreferenceDetails.objects.get(
-                    user=user)
-                recent_expenses = UserExpense.objects.filter(
-                    user=user).order_by('-date')[:5]
-            except ObjectDoesNotExist:
-                return JsonResponse(
-                    {"error": "User or profile details not found."},
-                    status=404)
-
-            # Summarize data without specific details for contextual response
-            expenses_summary = ", ".join(
-                [f"{expense.category}: {expense.expenses_amount}" for expense
-                 in recent_expenses]
-            )
-            personalized_context = (
-                f"This user has a general budget of around {preference_details.salary} and "
-                f"recent spending patterns such as {expenses_summary}. "
-                f"Respond to their question, considering these financial preferences without referencing personal details."
-            )
-
-            # full_prompt = (
-            #         "Your name is Riya and you are a Financial Advisor. Here is my personalized context: " + personalized_context + " Now tell me \n\nUser's Question: " + user_message +
-            #         " Respond to questions with appropriate words, friendly answers, adding relevant emojis for a user-friendly touch. Craft responses to resonate with an Indian audience by using approachable, positive language and cultural context."
-            # )
-            full_prompt = (
-                    "Your name is Riya, a friendly Financial Advisor, here to provide financial guidance. Here is the user's context: "
-                    + personalized_context +
-                    "\n\nUser's Question: " + user_message +
-                    "\n\nRespond concisely (under 50 words) with friendly, positive language, adding relevant emojis for a user-friendly touch. Ensure the answer resonates with an Indian audience by using culturally relatable terms. If the question is unrelated to finance, respond with: 'This is not a relevant question to ask here.'"
-            )
-
-            # Google Gemini API call
-            model = genai.GenerativeModel("gemini-1.5-flash")
-            response = model.generate_content(full_prompt)
-
-            return JsonResponse({"response": response.text.strip()})
-
-        except json.JSONDecodeError:
-            return JsonResponse({"error": "Invalid JSON format."}, status=400)
-        except Exception as e:
-            # Log the exception for debugging
-            print(f"An error occurred: {e}")
-            return JsonResponse(
-                {"error": "An internal server error occurred."}, status=500)
-
-    return JsonResponse({"error": "Only POST requests are allowed."},
-                        status=405)
