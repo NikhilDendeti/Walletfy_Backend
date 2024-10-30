@@ -12,5 +12,7 @@ whitenoise
 django-allauth
 PyJWT==2.6.0
 openai
+google-generativeai
+
 
 
