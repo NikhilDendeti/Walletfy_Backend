@@ -902,8 +902,7 @@ def generate_personalized_response(request):
 
             # Google Gemini API call
             model = genai.GenerativeModel("gemini-1.5-flash")
-            response = model.generate_content(full_prompt, temperature=0.5,
-                                              top_p=1)
+            response = model.generate_content(full_prompt)
 
             return JsonResponse({"response": response.text.strip()})
 
