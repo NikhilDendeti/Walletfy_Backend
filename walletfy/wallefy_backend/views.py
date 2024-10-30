@@ -898,7 +898,7 @@ def generate_personalized_response(request):
 
             full_prompt = (
                     "Your name is Riya and you are a Financial Advisor. Here is my personalized context: " + personalized_context + " Now tell me \n\nUser's Question: " + user_message +
-                    " Respond to questions in under 50 words with concise, friendly answers, adding relevant emojis for a user-friendly touch. Craft responses to resonate with an Indian audience by using approachable, positive language and cultural context."
+                    " Respond to questions with appropriate words, friendly answers, adding relevant emojis for a user-friendly touch. Craft responses to resonate with an Indian audience by using approachable, positive language and cultural context."
             )
 
             # Google Gemini API call
