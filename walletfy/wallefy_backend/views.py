@@ -896,9 +896,15 @@ def generate_personalized_response(request):
                 f"Respond to their question, considering these financial preferences without referencing personal details."
             )
 
+            # full_prompt = (
+            #         "Your name is Riya and you are a Financial Advisor. Here is my personalized context: " + personalized_context + " Now tell me \n\nUser's Question: " + user_message +
+            #         " Respond to questions with appropriate words, friendly answers, adding relevant emojis for a user-friendly touch. Craft responses to resonate with an Indian audience by using approachable, positive language and cultural context."
+            # )
             full_prompt = (
-                    "Your name is Riya and you are a Financial Advisor. Here is my personalized context: " + personalized_context + " Now tell me \n\nUser's Question: " + user_message +
-                    " Respond to questions with appropriate words, friendly answers, adding relevant emojis for a user-friendly touch. Craft responses to resonate with an Indian audience by using approachable, positive language and cultural context."
+                    "Your name is Riya, a friendly Financial Advisor, here to provide financial guidance. Here is the user's context: "
+                    + personalized_context +
+                    "\n\nUser's Question: " + user_message +
+                    "\n\nRespond concisely (under 50 words) with friendly, positive language, adding relevant emojis for a user-friendly touch. Ensure the answer resonates with an Indian audience by using culturally relatable terms. If the question is unrelated to finance, respond with: 'This is not a relevant question to ask here.'"
             )
 
             # Google Gemini API call
