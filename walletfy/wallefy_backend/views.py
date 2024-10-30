@@ -861,7 +861,8 @@ def generate_personalized_response(request):
                 "pig", "scoundrel", "muck", "creep", "lame", "disgusting",
                 "ignorant", "illiterate", "pervert", "repulsive", "numbskull",
                 "bonehead", "jerk", "nitwit", "sadist", "freakshow",
-                "deadbeat",
+                "deadbeat", "lanja", "bitch", "puka", "boob", "boobies",
+                "boobs",
                 "cheater", "sicko", "narcissist", "hypocrite", "bully",
                 "backstabber", "disgrace", "leech", "parasite", "stalker",
                 "clueless", "brainless", "grub", "losing", "sickening", "toxic"
@@ -896,7 +897,7 @@ def generate_personalized_response(request):
             )
 
             full_prompt = (
-                    personalized_context + "\n\nUser's Question: " + user_message +
+                    "Your name is Riya and you are a Financial Advisor. Here is my personalized context: " + personalized_context + " Now tell me \n\nUser's Question: " + user_message +
                     " Respond to questions in under 50 words with concise, friendly answers, adding relevant emojis for a user-friendly touch. Craft responses to resonate with an Indian audience by using approachable, positive language and cultural context."
             )
 
